@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="/static/sidebar.css">
+  {% block head %}
+  {% endblock head %}
+  <title>银行业务管理系统</title>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-primary">
+    <a class="navbar-brand mb-0 ml-lg-4" href="/">银行业务管理系统</a>
+  </nav>
+  <div class="d-flex" id="wrapper">
+    <div id="sidebar-wrapper">
+      <div class="sidebar-heading">客户管理</div>
+      <div class="list-group list-group-flush">
+        <a href="/customer/add" class="list-group-item list-group-item-action bg-light">增加客户</a>
+        <a href="/customer/del" class="list-group-item list-group-item-action bg-light">删除客户</a>
+        <a href="/customer/change" class="list-group-item list-group-item-action bg-light">修改客户信息</a>
+        <a href="/customer" class="list-group-item list-group-item-action bg-light">查询客户信息</a>
+      </div>
+      <div class="sidebar-heading">账户管理</div>
+      <div class="list-group list-group-flush">
+        <a href="/account/add" class="list-group-item list-group-item-action bg-light">开设账户</a>
+        <a href="/account/del" class="list-group-item list-group-item-action bg-light">销毁账户</a>
+        <a href="/account/change" class="list-group-item list-group-item-action bg-light">修改账户信息</a>
+        <a href="/account" class="list-group-item list-group-item-action bg-light">查询账户信息</a>
+      </div>
+      <div class="sidebar-heading">贷款管理</div>
+      <div class="list-group list-group-flush">
+        <a href="/loan/add" class="list-group-item list-group-item-action bg-light">增加贷款</a>
+        <a href="/loan/del" class="list-group-item list-group-item-action bg-light">删除贷款</a>
+        <a href="/loan/issue" class="list-group-item list-group-item-action bg-light">发放贷款</a>
+        <a href="/loan" class="list-group-item list-group-item-action bg-light">查询贷款信息</a>
+      </div>
+      <div class="sidebar-heading">统计</div>
+      <div class="list-group list-group-flush">
+        <a href="/stats" class="list-group-item list-group-item-action bg-light">业务统计</a>
+      </div>
+    </div>
+    <div class="container pl-1 pt-4" id="page-content-wrapper">
+      {% block content %}
+      {% endblock content %}
+    </div>
+  </div>
+  {% block tail %}
+  {% endblock tail %}
+</body>
+</html>

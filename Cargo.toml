@@ -1,0 +1,27 @@
+[package]
+name = "bank-management"
+version = "0.1.0"
+authors = ["Wang Ruochen <wangkevin920@163.com>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+actix-rt = "1"
+actix-web = "2"
+actix-http = "1"
+actix-files = "0.2"
+actix-session = "0.3"
+tera = "1.2"
+futures = "0.3"
+
+log = "0.4"
+env_logger = "0.7"
+rand = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+chrono = "0.4"
+thiserror = "1.0"
+
+[dependencies.sqlx]
+version = "0.3"
+default-features = false
+features = ["macros", "mysql", "bigdecimal", "chrono", "runtime-tokio"]
