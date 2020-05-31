@@ -9,6 +9,7 @@
 #sidebar-wrapper {
     margin-left: 0;
     transition: margin 0.25s ease-out;
+    width: 18rem;
     height: calc(100vh - 56px);
     overflow-x: hidden;
     overflow-y: scroll;
@@ -20,7 +21,7 @@
 }
 
 #sidebar-wrapper .list-group {
-    width: 15rem;
+    width: 100%;
 }
 
 #sidebar-wrapper .list-group-item {
@@ -28,6 +29,9 @@
 }
 
 #page-content-wrapper {
-    min-width: 0;
-    width: 100%;
+    max-width: none;
+    margin-left: 30px;
+    margin-right: 0;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
 }
