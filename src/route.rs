@@ -1,3 +1,4 @@
+use actix_session::Session;
 use actix_web::{get, post, web, HttpResponse};
 use futures::future::try_join_all;
 use sqlx::mysql::MySqlPool;
@@ -6,6 +7,30 @@ use tera::Tera;
 
 use crate::action::customer;
 use crate::error::{Error, Result};
+use crate::types::NewCustomer;
+
+#[post("/customer/add")]
+pub async fn add_customer(
+    sess: Session,
+    cus: web::Form<NewCustomer>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    if let Err(e) = cus.add(&pool).await {
+        if let Error::Sqlx(sqlx::Error::Database(e)) = e {
+            log::warn!("{}", e);
+            let code = e
+                .code()
+                .map(|s| ": code ".to_owned() + s)
+                .unwrap_or_default();
+            sess.set("error_msg", format!("DB error{}", code)).ok();
+        } else {
+            return Err(e);
+        }
+    }
+    Ok(HttpResponse::Found()
+        .header("location", "/customer/add")
+        .finish())
+}
 
 #[post("/customer/change")]
 pub async fn change_customer(
@@ -31,8 +56,13 @@ macro_rules! get_routes {
     ($($name:ident, $route:literal, $teml:literal;)*) => {
         $(
             #[get($route)]
-            pub async fn $name(teml: web::Data<Tera>) -> Result<HttpResponse> {
-                let s = teml.render($teml, &tera::Context::new())?;
+            pub async fn $name(sess: Session, teml: web::Data<Tera>) -> Result<HttpResponse> {
+                let mut ctx = tera::Context::new();
+                if let Some(msg) = sess.get::<String>("error_msg")? {
+                    sess.remove("error_msg");
+                    ctx.insert("error_msg", &msg);
+                }
+                let s = teml.render($teml, &ctx)?;
                 Ok(HttpResponse::Ok().body(s))
             }
         )*
