@@ -7,7 +7,9 @@ use tera::Tera;
 
 use crate::action::customer;
 use crate::error::{Error, Result};
-use crate::types::NewCustomer;
+use crate::types::{NewAccount, NewCustomer, NewLoan};
+
+type SMap = HashMap<String, String>;
 
 #[post("/customer/add")]
 pub async fn add_customer(
@@ -32,9 +34,22 @@ pub async fn add_customer(
         .finish())
 }
 
+#[post("/customer/del")]
+pub async fn del_customer(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/customer/del")
+        .finish())
+}
+
 #[post("/customer/change")]
 pub async fn change_customer(
-    mut form: web::Form<HashMap<String, String>>,
+    mut form: web::Form<SMap>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
     let id = form.remove("id").ok_or(Error::BadRequest("no id"))?;
@@ -50,6 +65,121 @@ pub async fn change_customer(
     Ok(HttpResponse::Found()
         .header("location", "/customer/change")
         .finish())
+}
+
+#[post("/customer/query")]
+pub async fn query_customer(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/customer")
+        .finish())
+}
+
+#[post("/account/add")]
+pub async fn add_account(
+    sess: Session,
+    form: web::Form<NewAccount>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/account/add")
+        .finish())
+}
+
+#[post("/account/del")]
+pub async fn del_account(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/account/del")
+        .finish())
+}
+
+#[post("/account/change")]
+pub async fn change_account(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/account/change")
+        .finish())
+}
+
+#[post("/account/query")]
+pub async fn query_account(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/account")
+        .finish())
+}
+
+#[post("/loan/add")]
+pub async fn add_loan(
+    sess: Session,
+    form: web::Form<NewLoan>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/loan/add")
+        .finish())
+}
+
+#[post("/loan/del")]
+pub async fn del_loan(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/loan/del")
+        .finish())
+}
+
+#[post("/loan/issue")]
+pub async fn issue_loan(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found()
+        .header("location", "/loan/issue")
+        .finish())
+}
+
+#[post("/loan/query")]
+pub async fn query_loan(
+    sess: Session,
+    form: web::Form<SMap>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    eprintln!("{:#?}", form);
+    // TODO
+    Ok(HttpResponse::Found().header("location", "/loan").finish())
 }
 
 macro_rules! get_routes {

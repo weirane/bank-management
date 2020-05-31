@@ -1,7 +1,8 @@
 use crate::error::Result;
+use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 
-#[derive(Debug, serde::Serialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct Customer {
     pub id: String,
     pub name: String,
@@ -9,7 +10,7 @@ pub struct Customer {
     pub address: String,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct NewCustomer {
     pub id: String,
     pub name: String,
@@ -34,5 +35,29 @@ impl NewCustomer {
         .execute(pool)
         .await
         .map_err(|e| e.into())
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct NewAccount {
+    // TODO
+}
+
+impl NewAccount {
+    pub async fn add(&self, pool: &MySqlPool) -> Result<u64> {
+        let _ = pool;
+        todo!("NewAccount::add");
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct NewLoan {
+    // TODO
+}
+
+impl NewLoan {
+    pub async fn add(&self, pool: &MySqlPool) -> Result<u64> {
+        let _ = pool;
+        todo!("NewLoan::add");
     }
 }

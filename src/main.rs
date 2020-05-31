@@ -50,6 +50,16 @@ async fn main() -> std::io::Result<()> {
             .service(loan_query)
             .service(stats)
             .service(add_customer)
+            .service(del_customer)
+            .service(query_customer)
+            .service(add_account)
+            .service(del_account)
+            .service(change_account)
+            .service(query_account)
+            .service(add_loan)
+            .service(del_loan)
+            .service(issue_loan)
+            .service(query_loan)
             .service(change_customer)
             .default_service(
                 actix_files::Files::new("", "public").default_handler(
