@@ -20,11 +20,22 @@ pub async fn add_customer(
     if let Err(e) = cus.add(&pool).await {
         if let Error::Sqlx(sqlx::Error::Database(e)) = e {
             log::warn!("{}", e);
-            let code = e
-                .code()
-                .map(|s| ": code ".to_owned() + s)
-                .unwrap_or_default();
-            sess.set("error_msg", format!("DB error{}", code)).ok();
+            let msg = if let Some(c) = e.code() {
+                if c == "23000" {
+                    if e.message().contains("FK_CUS_CONTACT") {
+                        "联系人不存在".to_owned()
+                    } else if e.message().starts_with("Duplicate entry") {
+                        "客户已存在".to_owned()
+                    } else {
+                        "DB error: code 23000".to_owned()
+                    }
+                } else {
+                    format!("DB error: code {}", c)
+                }
+            } else {
+                "DB error".to_owned()
+            };
+            sess.set("error_msg", msg).ok();
         } else {
             return Err(e);
         }
@@ -40,8 +51,11 @@ pub async fn del_customer(
     form: web::Form<SMap>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
+    let id = form.get("id").ok_or(Error::BadRequest("no id"))?;
+    let n = customer::del(&id, &pool).await?;
+    if n == 0 {
+        sess.set("error_msg", "客户不存在".to_owned()).ok();
+    }
     Ok(HttpResponse::Found()
         .header("location", "/customer/del")
         .finish())
