@@ -55,6 +55,7 @@ create table account (
     balance decimal(12, 2) not null default 0,
     open_date date not null,
     type int not null,
+    bank varchar(20) not null,
     constraint PK_ACC primary key (account_id),
     constraint CK_ACC_TYPE check(type in (0, 1))  -- 0: save, 1: check
 );
@@ -78,14 +79,9 @@ create table has_account (
     account_id char(6) not null,
     customer_id char(18) not null,
     last_visit datetime not null default current_timestamp on update current_timestamp,
-    bank varchar(20) not null,
-    type int not null,
     constraint PK_HAS_ACCOUNT primary key (account_id, customer_id),
-    constraint FK_BANK_ACCOUNT foreign key (bank) references bank(bank_name),
     constraint FK_CUS_HAS foreign key (customer_id) references customer(customer_id),
-    constraint FK_ACC_HAS foreign key (account_id) references account(account_id) on delete cascade,
-    constraint check(type in (0, 1)),  -- 0: save, 1: check
-    constraint unique key(bank, customer_id, type)
+    constraint FK_ACC_HAS foreign key (account_id) references account(account_id) on delete cascade
 );
 
 create table loan (
@@ -112,3 +108,17 @@ create table loan_pay (
     constraint PK_LOAN_PAY primary key (loan_id, amount, paytime),
     constraint FK_LOANPAY_LOAN foreign key (loan_id) references loan(loan_id) on delete cascade
 );
+
+create view checkaccounts
+    (account_id,bank,type,balance,open_date,credit) as
+select
+    account.account_id,bank,type,balance,open_date,credit
+from
+    account left join checkacc using(account_id);
+
+create view saveaccounts
+    (account_id,bank,type,balance,open_date,interest_rate,currency) as
+select
+    account.account_id,bank,type,balance,open_date,interest_rate,currency
+from
+    account left join saveacc using(account_id);

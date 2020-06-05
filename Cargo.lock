@@ -433,6 +433,7 @@ dependencies = [
  "actix-rt",
  "actix-session",
  "actix-web",
+ "bigdecimal",
  "chrono",
  "env_logger",
  "futures",

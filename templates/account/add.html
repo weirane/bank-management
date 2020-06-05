@@ -4,4 +4,104 @@
 
 <h4>开设账户</h4>
 
+<div class="d-flex pt-3 justify-content-start">
+  <div class="pr-5">
+    <h5 class="card-title">添加储蓄账户</h5>
+    <form action="/account/add" method="POST">
+      <input type="hidden" class="form-control" name="type" value="Save" />
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">账户号</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="id" maxlength="6" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">开户银行</label>
+        <div class="col-sm-8">
+          <select class="form-control" name="bank">
+            {% for b in banks %}
+            <option value="{{ b }}">{{ b }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">货币类型</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="currency" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">余额</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="balance" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">利率</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="interest_rate" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">客户</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="customers" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-sm-8">
+          <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="pl-5">
+    <h5 class="card-title">添加支票账户</h5>
+    <form action="/account/add" method="POST">
+      <input type="hidden" class="form-control" name="type" value="Check" />
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">账户号</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="id" maxlength="6" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">开户银行</label>
+        <div class="col-sm-8">
+          <select class="form-control" name="bank">
+            {% for b in banks %}
+            <option value="{{ b }}">{{ b }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">余额</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="balance" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">透支额</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="credit" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="id" class="col-sm-4 col-form-label">客户</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="customers" required />
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-sm-8">
+          <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 {% endblock content %}
