@@ -114,11 +114,13 @@ create view checkaccounts
 select
     account.account_id,bank,type,balance,open_date,credit
 from
-    account left join checkacc using(account_id);
+    account left join checkacc using(account_id)
+where type = 1;
 
 create view saveaccounts
     (account_id,bank,type,balance,open_date,interest_rate,currency) as
 select
     account.account_id,bank,type,balance,open_date,interest_rate,currency
 from
-    account left join saveacc using(account_id);
+    account left join saveacc using(account_id)
+where type = 0;
