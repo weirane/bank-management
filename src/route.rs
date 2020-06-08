@@ -148,12 +148,50 @@ pub async fn del_account(
 
 #[post("/account/change")]
 pub async fn change_account(
-    sess: Session,
-    form: web::Form<SMap>,
+    mut form: web::Form<SMap>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
+    let id = form.remove("id").ok_or(Error::BadRequest("no id"))?;
+    let atype = form.remove("type").ok_or(Error::BadRequest("no type"))?;
+    if let Some(v) = form.remove("bank") {
+        if !v.is_empty() {
+            sqlx::query!("update account set bank = ? where account_id = ?", v, id)
+                .execute(&**pool)
+                .await?;
+        }
+    }
+    if let Some(v) = form.remove("balance") {
+        if !v.is_empty() {
+            sqlx::query!("update account set balance = ? where account_id = ?", v, id)
+                .execute(&**pool)
+                .await?;
+        }
+    }
+    match atype.as_str() {
+        "Save" => {
+            let fs = form.iter().filter_map(|(k, v)| {
+                let v = v.trim();
+                if v.is_empty() {
+                    None
+                } else {
+                    Some(account::change_save(&id, k, v, &pool))
+                }
+            });
+            try_join_all(fs).await?;
+        }
+        "Check" => {
+            let fs = form.iter().filter_map(|(k, v)| {
+                let v = v.trim();
+                if v.is_empty() {
+                    None
+                } else {
+                    Some(account::change_check(&id, k, v, &pool))
+                }
+            });
+            try_join_all(fs).await?;
+        }
+        _ => return Err(Error::BadRequest("wrong type")),
+    };
     Ok(HttpResponse::Found()
         .header("location", "/account/change")
         .finish())
@@ -269,7 +307,13 @@ get_routes!(account_add, "/account/add", "account/add.html", {
     ctx.insert("banks", &banks);
 });
 get_routes!(account_del, "/account/del", "account/del.html");
-get_routes!(account_change, "/account/change", "account/change.html");
+get_routes!(account_change, "/account/change", "account/change.html", {
+    let banks = sqlx::query("select bank_name from bank")
+        .map(|x: MySqlRow| -> String { x.get("bank_name") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("banks", &banks);
+});
 get_routes!(account_query, "/account", "account/query.html");
 
 get_routes!(loan_add, "/loan/add", "loan/add.html");

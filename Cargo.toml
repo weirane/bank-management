@@ -5,6 +5,9 @@ authors = ["Wang Ruochen <wangkevin920@163.com>"]
 edition = "2018"
 publish = false
 
+[profile.release]
+panic = "abort"
+
 [dependencies]
 actix-rt = "1"
 actix-web = "2"
