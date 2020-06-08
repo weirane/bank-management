@@ -12,6 +12,23 @@ use crate::types::{NewAccount, NewCustomer, NewLoan, TypedNewAccount};
 
 type SMap = HashMap<String, String>;
 
+macro_rules! db_error_msg {
+    ($err:expr, $($code:literal => $($test:ident $str:literal : $msg:expr)+)+) => {{
+        let e = $err;
+        if let Some(c) = e.code() {
+            match c {
+                $($code => match e.message() {
+                    $(m if m.$test($str) => ($msg)(m).to_string(),)+
+                    _ => concat!("DB error: code ", $code).to_owned(),
+                })+,
+                _ => format!("DB error: code {}", c),
+            }
+        } else {
+            "DB error".to_owned()
+        }
+    }};
+}
+
 #[post("/customer/add")]
 pub async fn add_customer(
     sess: Session,
@@ -21,21 +38,11 @@ pub async fn add_customer(
     if let Err(e) = cus.add(&pool).await {
         if let Error::Sqlx(sqlx::Error::Database(e)) = e {
             log::warn!("{}", e);
-            let msg = if let Some(c) = e.code() {
-                if c == "23000" {
-                    if e.message().contains("FK_CUS_CONTACT") {
-                        "联系人不存在".to_owned()
-                    } else if e.message().starts_with("Duplicate entry") {
-                        "客户已存在".to_owned()
-                    } else {
-                        "DB error: code 23000".to_owned()
-                    }
-                } else {
-                    format!("DB error: code {}", c)
-                }
-            } else {
-                "DB error".to_owned()
-            };
+            let msg = db_error_msg!(e,
+                "23000" =>
+                    contains "FK_CUS_CONTACT" : |_| "联系人不存在"
+                    starts_with "Duplicate entry" : |_| "客户已存在"
+            );
             sess.set("error_msg", msg).ok();
         } else {
             return Err(e);
@@ -107,21 +114,12 @@ pub async fn add_account(
         if let Error::Sqlx(sqlx::Error::Database(e)) = e {
             log::warn!("{}", e);
             eprintln!("{:#?}", e);
-            let msg = if let Some(c) = e.code() {
-                match c {
-                    "23000" => {
-                        if e.message().starts_with("Duplicate entry") {
-                            "账户号已存在".to_owned()
-                        } else {
-                            "DB error: code 23000".to_owned()
-                        }
-                    }
-                    // TODO: 45000 account existed
-                    _ => format!("DB error: code {}", c),
-                }
-            } else {
-                "DB error".to_owned()
-            };
+            let msg = db_error_msg!(e,
+                "23000" =>
+                    starts_with "Duplicate entry" : |_| "账户号已存在"
+                "45000" =>
+                    ends_with "已存在" : |m| m
+            );
             sess.set("error_msg", msg).ok();
         } else {
             return Err(e);
