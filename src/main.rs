@@ -30,7 +30,12 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(NormalizePath)
             .wrap(DefaultHeaders::new().header("Content-Type", "text/html; charset=utf-8"))
-            .wrap(CookieSession::signed(&priv_key).name("sess").secure(false))
+            .wrap(
+                CookieSession::signed(&priv_key)
+                    .name("error")
+                    .secure(false)
+                    .same_site(actix_http::cookie::SameSite::Strict),
+            )
             .wrap(Logger::default())
             .data(web::FormConfig::default().limit(4096))
             .data(pool.clone())

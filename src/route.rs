@@ -105,7 +105,7 @@ pub async fn query_customer(
 #[post("/account/add")]
 pub async fn add_account(
     sess: Session,
-    form: web::Form<NewAccount>,
+    form: web::Json<NewAccount>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
     use std::convert::TryInto;
@@ -125,9 +125,7 @@ pub async fn add_account(
             return Err(e);
         }
     }
-    Ok(HttpResponse::Found()
-        .header("location", "/account/add")
-        .finish())
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[post("/account/del")]
@@ -304,7 +302,12 @@ get_routes!(account_add, "/account/add", "account/add.html", {
         .map(|x: MySqlRow| -> String { x.get("bank_name") })
         .fetch_all(&**pool)
         .await?;
+    let customers = sqlx::query("select customer_id from customer")
+        .map(|x: MySqlRow| -> String { x.get("customer_id") })
+        .fetch_all(&**pool)
+        .await?;
     ctx.insert("banks", &banks);
+    ctx.insert("customers", &customers);
 });
 get_routes!(account_del, "/account/del", "account/del.html");
 get_routes!(account_change, "/account/change", "account/change.html", {

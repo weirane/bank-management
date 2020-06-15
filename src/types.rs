@@ -49,6 +49,7 @@ pub enum NewAccount {
         id: String,
         bank: String,
         balance: String,
+        customers: Vec<String>,
         currency: String,
         interest_rate: String,
     },
@@ -56,6 +57,7 @@ pub enum NewAccount {
         id: String,
         bank: String,
         balance: String,
+        customers: Vec<String>,
         credit: String,
     },
 }
@@ -68,6 +70,7 @@ impl TryInto<TypedNewAccount> for NewAccount {
                 id,
                 bank,
                 balance,
+                customers,
                 currency,
                 interest_rate,
             } => {
@@ -79,6 +82,7 @@ impl TryInto<TypedNewAccount> for NewAccount {
                     bank,
                     currency,
                     balance: balance.parse().map_err(|_| Error::BadRequest("balance"))?,
+                    customers,
                     interest_rate: interest_rate
                         .parse()
                         .map_err(|_| Error::BadRequest("interest_rate"))?,
@@ -88,11 +92,13 @@ impl TryInto<TypedNewAccount> for NewAccount {
                 id,
                 bank,
                 balance,
+                customers,
                 credit,
             } => TypedNewAccount::Check {
                 id,
                 bank,
                 balance: balance.parse().map_err(|_| Error::BadRequest("balance"))?,
+                customers,
                 credit: credit.parse().map_err(|_| Error::BadRequest("credit"))?,
             },
         };
@@ -106,12 +112,14 @@ pub enum TypedNewAccount {
         id: String,
         bank: String,
         balance: BigDecimal,
+        customers: Vec<String>,
         currency: String,
         interest_rate: BigDecimal,
     },
     Check {
         id: String,
         bank: String,
+        customers: Vec<String>,
         balance: BigDecimal,
         credit: BigDecimal,
     },
@@ -119,11 +127,12 @@ pub enum TypedNewAccount {
 
 impl TypedNewAccount {
     pub async fn add(&self, pool: &MySqlPool) -> Result<()> {
-        match self {
+        let (id, customers) = match self {
             TypedNewAccount::Save {
                 id,
                 bank,
                 balance,
+                customers,
                 currency,
                 interest_rate,
             } => {
@@ -137,11 +146,13 @@ impl TypedNewAccount {
                 )
                 .execute(pool)
                 .await?;
+                (id, customers)
             }
             TypedNewAccount::Check {
                 id,
                 bank,
                 balance,
+                customers,
                 credit,
             } => {
                 sqlx::query!(
@@ -153,9 +164,18 @@ impl TypedNewAccount {
                 )
                 .execute(pool)
                 .await?;
+                (id, customers)
             }
-        }
-        // TODO: update has_account for customers
+        };
+        let fs = customers.iter().map(|c| {
+            sqlx::query!(
+                "insert into has_account (account_id, customer_id) values (?, ?)",
+                id,
+                c
+            )
+            .execute(pool)
+        });
+        futures::future::try_join_all(fs).await?;
         Ok(())
     }
 }
