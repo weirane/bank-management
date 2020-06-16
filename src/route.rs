@@ -208,14 +208,22 @@ pub async fn query_account(
 #[post("/loan/add")]
 pub async fn add_loan(
     sess: Session,
-    form: web::Form<NewLoan>,
+    form: web::Json<NewLoan>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
-    Ok(HttpResponse::Found()
-        .header("location", "/loan/add")
-        .finish())
+    if let Err(e) = form.add(&pool).await {
+        if let Error::Sqlx(sqlx::Error::Database(e)) = e {
+            log::warn!("{}", e);
+            let msg = db_error_msg!(e,
+                "23000" =>
+                    starts_with "Duplicate entry" : |_| "贷款号已存在"
+            );
+            sess.set("error_msg", msg).ok();
+        } else {
+            return Err(e);
+        }
+    }
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[post("/loan/del")]
@@ -316,7 +324,18 @@ get_routes!(account_change, "/account/change", "account/change.html", {
 });
 get_routes!(account_query, "/account", "account/query.html");
 
-get_routes!(loan_add, "/loan/add", "loan/add.html");
+get_routes!(loan_add, "/loan/add", "loan/add.html", {
+    let banks = sqlx::query("select bank_name from bank")
+        .map(|x: MySqlRow| -> String { x.get("bank_name") })
+        .fetch_all(&**pool)
+        .await?;
+    let customers = sqlx::query("select customer_id from customer")
+        .map(|x: MySqlRow| -> String { x.get("customer_id") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("banks", &banks);
+    ctx.insert("customers", &customers);
+});
 get_routes!(loan_del, "/loan/del", "loan/del.html");
 get_routes!(loan_issue, "/loan/issue", "loan/issue.html");
 get_routes!(loan_query, "/loan", "loan/query.html");

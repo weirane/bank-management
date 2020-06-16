@@ -116,12 +116,31 @@ impl NewAccount {
 
 #[derive(Debug, Deserialize)]
 pub struct NewLoan {
-    // TODO
+    id: String,
+    amount: BigDecimal,
+    bank: String,
+    customers: Vec<String>,
 }
 
 impl NewLoan {
-    pub async fn add(&self, pool: &MySqlPool) -> Result<u64> {
-        let _ = pool;
-        todo!("NewLoan::add");
+    pub async fn add(&self, pool: &MySqlPool) -> Result<()> {
+        sqlx::query!(
+            "insert into loan (loan_id, amount, bank) values (?, ?, ?)",
+            self.id,
+            self.amount,
+            self.bank
+        )
+        .execute(pool)
+        .await?;
+        let fs = self.customers.iter().map(|c| {
+            sqlx::query!(
+                "insert into make_loan (loan_id, customer_id) values (?, ?)",
+                self.id,
+                c
+            )
+            .execute(pool)
+        });
+        futures::future::try_join_all(fs).await?;
+        Ok(())
     }
 }

@@ -1,4 +1,34 @@
+drop trigger if exists check_overloan;
+drop trigger if exists loan_state;
 drop trigger if exists account_type;
+
+create trigger check_overloan
+before insert on loan_pay
+for each row begin
+    declare pay int;
+    declare total int;
+    select sum(amount) into pay from loan_pay where loan_pay.loan_id=new.loan_id;
+    select amount into total from loan where loan.loan_id=new.loan_id;
+    if pay + new.amount > total then
+        signal sqlstate '45002' set message_text = '超出贷款金额';
+    end if;
+end;
+
+create trigger loan_state
+after insert on loan_pay
+for each row begin
+    declare pay int;
+    declare total int;
+    select sum(amount) into pay from loan_pay where loan_pay.loan_id=new.loan_id;
+    select amount into total from loan where loan.loan_id=new.loan_id;
+    if pay > 0 and pay < total then
+        update loan set state='1' where loan.loan_id=new.loan_id;
+    elseif pay = total then
+        update loan set state='2' where loan.loan_id=new.loan_id;
+    elseif pay > total then
+        signal sqlstate '45002' set message_text = '超出贷款金额';
+    end if;
+end;
 
 create trigger account_type
 before insert on has_account
