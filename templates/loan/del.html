@@ -4,4 +4,19 @@
 
 <h4>删除贷款</h4>
 
+<form class="pt-3" action="/loan/del" method="POST">
+  <div class="form-group row">
+    <!-- TODO: searchable -->
+    <label for="id" class="col-sm-1 col-form-label">ID</label>
+    <div class="col-sm-3">
+      <input type="text" class="form-control" name="id" maxlength="11" required />
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-sm-3">
+      <button type="submit" class="btn btn-primary">提交</button>
+    </div>
+  </div>
+</form>
+
 {% endblock content %}

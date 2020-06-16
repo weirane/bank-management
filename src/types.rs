@@ -144,3 +144,22 @@ impl NewLoan {
         Ok(())
     }
 }
+
+#[derive(Debug, Deserialize)]
+pub struct NewLoanPay {
+    id: String,
+    amount: BigDecimal,
+}
+
+impl NewLoanPay {
+    pub async fn add(&self, pool: &MySqlPool) -> Result<u64> {
+        sqlx::query!(
+            "insert into loan_pay (loan_id, amount) values (?, ?)",
+            self.id,
+            self.amount,
+        )
+        .execute(pool)
+        .await
+        .map_err(Into::into)
+    }
+}

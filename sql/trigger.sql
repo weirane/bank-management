@@ -1,5 +1,6 @@
 drop trigger if exists check_overloan;
 drop trigger if exists loan_state;
+drop trigger if exists loan_delete;
 drop trigger if exists account_type;
 
 create trigger check_overloan
@@ -27,6 +28,16 @@ for each row begin
         update loan set state='2' where loan.loan_id=new.loan_id;
     elseif pay > total then
         signal sqlstate '45002' set message_text = '超出贷款金额';
+    end if;
+end;
+
+create trigger loan_delete
+before delete on loan
+for each row begin
+    declare a int;
+    select state into a from loan where old.loan_id=loan.loan_id;
+    if a = 1 then
+        signal sqlstate '45003' set message_text = '贷款发放中';
     end if;
 end;
 

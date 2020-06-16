@@ -6,9 +6,9 @@ use sqlx::Row;
 use std::collections::HashMap;
 use tera::Tera;
 
-use crate::action::{account, customer};
+use crate::action::{account, customer, loan};
 use crate::error::{Error, Result};
-use crate::types::{NewAccount, NewCustomer, NewLoan};
+use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
 type SMap = HashMap<String, String>;
 
@@ -232,8 +232,22 @@ pub async fn del_loan(
     form: web::Form<SMap>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
+    let id = form.get("id").ok_or(Error::BadRequest("no id"))?;
+    match loan::del(id, &pool).await {
+        Ok(0) => {
+            sess.set("error_msg", "贷款号不存在".to_owned()).ok();
+        }
+        Err(Error::Sqlx(sqlx::Error::Database(e))) => {
+            log::warn!("{}", e);
+            let msg = db_error_msg!(e,
+                "45003" =>
+                    eq "贷款发放中" : |m| m
+            );
+            sess.set("error_msg", msg).ok();
+        }
+        Err(e) => return Err(e),
+        _ => (),
+    }
     Ok(HttpResponse::Found()
         .header("location", "/loan/del")
         .finish())
@@ -242,11 +256,23 @@ pub async fn del_loan(
 #[post("/loan/issue")]
 pub async fn issue_loan(
     sess: Session,
-    form: web::Form<SMap>,
+    form: web::Form<NewLoanPay>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
+    if let Err(e) = form.add(&pool).await {
+        if let Error::Sqlx(sqlx::Error::Database(e)) = e {
+            log::warn!("{}", e);
+            let msg = db_error_msg!(e,
+                "23000" =>
+                    contains "a foreign key constraint fails" : |_| "ID 不存在"
+                "45002" =>
+                    eq "超出贷款金额" : |m| m
+            );
+            sess.set("error_msg", msg).ok();
+        } else {
+            return Err(e);
+        }
+    }
     Ok(HttpResponse::Found()
         .header("location", "/loan/issue")
         .finish())
