@@ -10,6 +10,9 @@ function difference(s1, s2) {
 
 async function submitJSON(path, form_id) {
     const form = document.getElementById(form_id);
+    if (!form.checkValidity()) {
+        return;
+    }
     const fd = new FormData(form);
     let keys = new Set(fd.keys());
     let multi_sel = new Set(

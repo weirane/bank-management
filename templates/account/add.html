@@ -46,7 +46,7 @@
       <div class="form-group row">
         <label for="id" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
-          <select class="form-control" name="customers" multiple>
+          <select class="form-control" name="customers" multiple required>
             {% for c in customers %}
             <option value="{{ c }}">{{ c }}</option>
             {% endfor %}
@@ -96,7 +96,7 @@
       <div class="form-group row">
         <label for="id" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
-          <select class="form-control" name="customers" multiple>
+          <select class="form-control" name="customers" multiple required>
             {% for c in customers %}
             <option value="{{ c }}">{{ c }}</option>
             {% endfor %}
