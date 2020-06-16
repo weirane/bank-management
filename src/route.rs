@@ -8,7 +8,7 @@ use tera::Tera;
 
 use crate::action::{account, customer};
 use crate::error::{Error, Result};
-use crate::types::{NewAccount, NewCustomer, NewLoan, TypedNewAccount};
+use crate::types::{NewAccount, NewCustomer, NewLoan};
 
 type SMap = HashMap<String, String>;
 
@@ -108,12 +108,9 @@ pub async fn add_account(
     form: web::Json<NewAccount>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    use std::convert::TryInto;
-    let acc: TypedNewAccount = form.into_inner().try_into()?;
-    if let Err(e) = acc.add(&pool).await {
+    if let Err(e) = form.add(&pool).await {
         if let Error::Sqlx(sqlx::Error::Database(e)) = e {
             log::warn!("{}", e);
-            eprintln!("{:#?}", e);
             let msg = db_error_msg!(e,
                 "23000" =>
                     starts_with "Duplicate entry" : |_| "账户号已存在"
