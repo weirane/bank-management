@@ -108,19 +108,3 @@ create table loan_pay (
     constraint PK_LOAN_PAY primary key (loan_id, amount, paytime),
     constraint FK_LOANPAY_LOAN foreign key (loan_id) references loan(loan_id) on delete cascade
 );
-
-create view checkaccounts
-    (account_id,bank,type,balance,open_date,credit) as
-select
-    account.account_id,bank,type,balance,open_date,credit
-from
-    account left join checkacc using(account_id)
-where type = 1;
-
-create view saveaccounts
-    (account_id,bank,type,balance,open_date,interest_rate,currency) as
-select
-    account.account_id,bank,type,balance,open_date,interest_rate,currency
-from
-    account left join saveacc using(account_id)
-where type = 0;
