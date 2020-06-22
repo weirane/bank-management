@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@4.8.0/dist/echarts.min.js" crossorigin="anonymous"></script>
+{% endblock head %}
+
+{% block content %}
+
+<h4>贷款业务统计</h4>
+
+<div id="main" data-type="check" style="width: 600px;height:400px;"></div>
+
+{% endblock content %}
+
+{% block tail %}
+<script src="/static/stats.js"></script>
+{% endblock tail %}

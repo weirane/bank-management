@@ -1,13 +1,17 @@
 use actix_session::Session;
 use actix_web::{get, post, web, HttpResponse};
+use chrono::{Datelike, NaiveDate};
 use futures::future::try_join_all;
-use sqlx::mysql::{MySqlPool, MySqlRow};
+use serde_json::json;
+use sqlx::mysql::{MySqlPool, MySqlQueryAs, MySqlRow};
 use sqlx::Row;
 use std::collections::HashMap;
+use std::iter;
 use tera::Tera;
 
 use crate::action::{account, customer, loan};
 use crate::error::{Error, Result};
+use crate::types::{LoanStat, SaveStat};
 use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
 type SMap = HashMap<String, String>;
@@ -289,6 +293,56 @@ pub async fn query_loan(
     Ok(HttpResponse::Found().header("location", "/loan").finish())
 }
 
+fn gen_dates(years: i32) -> impl Iterator<Item = NaiveDate> {
+    let today = chrono::Utc::today().naive_utc();
+    let (mut y, mut m) = (today.year(), today.month());
+    let start = NaiveDate::from_ymd(y, m, 1);
+    let ys = y;
+    iter::once(start).chain(iter::from_fn(move || {
+        if m == 1 {
+            y -= 1;
+            m = 12;
+        } else {
+            m -= 1;
+        }
+        if y <= ys - years {
+            None
+        } else {
+            Some(NaiveDate::from_ymd(y, m, 1))
+        }
+    }))
+}
+
+#[post("/stats/save")]
+pub async fn stats_save_data(pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
+    let mut ret = Vec::new();
+    for date in gen_dates(3) {
+        // sqlx::query_as!(Foo, include_str!("...")) is not available
+        // launchbadge/sqlx#388
+        let s: Vec<SaveStat> = sqlx::query_as(include_str!("../sql/save_stat.inc.sql"))
+            .bind(date)
+            .bind(date)
+            .fetch_all(&**pool)
+            .await?;
+        ret.push(json!({ date.to_string(): s }));
+    }
+    Ok(HttpResponse::Ok().json(ret))
+}
+
+#[post("/stats/check")]
+pub async fn stats_check_data(pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
+    let mut ret = Vec::new();
+    for date in gen_dates(3) {
+        let s: Vec<LoanStat> = sqlx::query_as(include_str!("../sql/check_stat.inc.sql"))
+            .bind(date)
+            .bind(date)
+            .fetch_all(&**pool)
+            .await?;
+        ret.push(json!({ date.to_string(): s }));
+    }
+    Ok(HttpResponse::Ok().json(ret))
+}
+
 macro_rules! get_routes {
     ($name:ident, $route:literal, $teml:literal, $b:block) => {
         #[get($route)]
@@ -366,7 +420,8 @@ get_routes!(loan_del, "/loan/del", "loan/del.html");
 get_routes!(loan_issue, "/loan/issue", "loan/issue.html");
 get_routes!(loan_query, "/loan", "loan/query.html");
 
-get_routes!(stats, "/stats", "stats.html");
+get_routes!(stats_save, "/stats/save", "stats/save.html");
+get_routes!(stats_check, "/stats/check", "stats/check.html");
 
 pub async fn p404(teml: web::Data<Tera>) -> HttpResponse {
     let s = teml

@@ -53,7 +53,8 @@ async fn main() -> std::io::Result<()> {
             .service(loan_del)
             .service(loan_issue)
             .service(loan_query)
-            .service(stats)
+            .service(stats_save)
+            .service(stats_check)
             .service(add_customer)
             .service(del_customer)
             .service(query_customer)
@@ -66,6 +67,8 @@ async fn main() -> std::io::Result<()> {
             .service(issue_loan)
             .service(query_loan)
             .service(change_customer)
+            .service(stats_save_data)
+            .service(stats_check_data)
             .default_service(
                 actix_files::Files::new("", "public").default_handler(
                     web::resource("")

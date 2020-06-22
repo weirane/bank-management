@@ -163,3 +163,17 @@ impl NewLoanPay {
         .map_err(Into::into)
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct SaveStat {
+    pub bank: String,
+    pub total_balance: BigDecimal,
+    pub total_customer: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct LoanStat {
+    pub bank: String,
+    pub total_loanpay: BigDecimal,
+    pub total_customer: i64,
+}
