@@ -12,7 +12,23 @@ async function query(path, form_id) {
         method: 'POST',
         body: data,
     });
-    const json = await res.json();
-    console.log(json);
+    const customers = await res.json();
+    const tbody = document.querySelector('#result tbody');
+    tbody.innerHTML = '';
+    if (customers.length == 0) {
+        result.classList.add('empty');
+        form.reset();
+        return;
+    }
+    result.classList.remove('empty');
+    for (const cus of customers) {
+        const tr = document.createElement('tr');
+        for (const key of ['id', 'name', 'tel', 'address']) {
+            const el = document.createElement('td');
+            el.innerText = cus[key];
+            tr.appendChild(el);
+        }
+        tbody.appendChild(tr);
+    }
     form.reset();
 }
