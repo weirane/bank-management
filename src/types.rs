@@ -114,6 +114,14 @@ impl NewAccount {
     }
 }
 
+#[derive(Debug, Serialize, sqlx::FromRow)]
+pub struct Loan {
+    pub id: String,
+    pub bank: String,
+    pub amount: BigDecimal,
+    pub state: i32,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct NewLoan {
     id: String,

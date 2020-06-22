@@ -11,6 +11,7 @@ use tera::Tera;
 
 use crate::action::{account, customer, loan};
 use crate::error::{Error, Result};
+use crate::types::{Customer, Loan};
 use crate::types::{LoanStat, SaveStat};
 use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
@@ -95,15 +96,30 @@ pub async fn change_customer(
 
 #[post("/customer/query")]
 pub async fn query_customer(
-    sess: Session,
     form: web::Form<SMap>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
-    Ok(HttpResponse::Found()
-        .header("location", "/customer")
-        .finish())
+    let empty = String::new();
+    let ret: Vec<Customer> = sqlx::query_as!(
+        Customer,
+        "select customer_id as id, name, tel, address from customer where
+        customer_id like concat('%', ?, '%')
+        and name like concat('%', ?, '%')
+        and tel like concat('%', ?, '%')
+        and address like concat('%', ?, '%')
+        and contacter_id like concat('%', ?, '%')
+        and relation like concat('%', ?, '%')
+        ",
+        form.get("id").unwrap_or(&empty),
+        form.get("name").unwrap_or(&empty),
+        form.get("tel").unwrap_or(&empty),
+        form.get("address").unwrap_or(&empty),
+        form.get("contacter_id").unwrap_or(&empty),
+        form.get("relation").unwrap_or(&empty),
+    )
+    .fetch_all(&**pool)
+    .await?;
+    Ok(HttpResponse::Ok().json(ret))
 }
 
 #[post("/account/add")]
@@ -283,14 +299,25 @@ pub async fn issue_loan(
 }
 
 #[post("/loan/query")]
-pub async fn query_loan(
-    sess: Session,
-    form: web::Form<SMap>,
-    pool: web::Data<MySqlPool>,
-) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
-    Ok(HttpResponse::Found().header("location", "/loan").finish())
+pub async fn query_loan(form: web::Form<SMap>, pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
+    dbg!(&form);
+    let empty = String::new();
+    let ret: Vec<Loan> = sqlx::query_as!(
+        Loan,
+        "select loan_id as id, bank, amount, state from loan where
+        loan_id like concat('%', ?, '%')
+        and bank like concat('%', ?, '%')
+        and amount like concat('%', ?, '%')
+        and state like concat('%', ?, '%')
+        ",
+        form.get("id").unwrap_or(&empty),
+        form.get("bank").unwrap_or(&empty),
+        form.get("amount").unwrap_or(&empty),
+        form.get("state").unwrap_or(&empty),
+    )
+    .fetch_all(&**pool)
+    .await?;
+    Ok(HttpResponse::Ok().json(ret))
 }
 
 fn gen_dates(years: i32) -> impl Iterator<Item = NaiveDate> {

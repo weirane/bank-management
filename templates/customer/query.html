@@ -4,4 +4,40 @@
 
 <h4>查询客户信息</h4>
 
+<form id="query-customer">
+  <div class="row">
+    <div class="form-group col">
+      <label for="id" class="col-form-label">ID</label>
+      <input type="text" class="col-sm-9 form-control" name="id" maxlength="18" />
+    </div>
+    <div class="form-group col">
+      <label for="name" class="col-form-label">姓名</label>
+      <input type="text" class="col-sm-9 form-control" name="name" maxlength="32" />
+    </div>
+    <div class="form-group col">
+      <label for="tel" class="col-form-label">电话</label>
+      <input type="text" class="col-sm-9 form-control" name="tel" maxlength="20" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group col">
+      <label for="address" class="col-form-label">地址</label>
+      <input type="text" class="col-sm-9 form-control" name="address" maxlength="128" />
+    </div>
+    <div class="form-group col">
+      <label for="address" class="col-form-label">联系人</label>
+      <input type="text" class="col-sm-9 form-control" name="contacter_id" />
+    </div>
+    <div class="form-group col">
+      <label for="address" class="col-form-label">与联系人的关系</label>
+      <input type="text" class="col-sm-9 form-control" name="relation" maxlength="10" />
+    </div>
+  </div>
+  <button type="button" onclick="query('/customer/query', 'query-customer')" class="btn btn-primary">提交</button>
+</form>
+
 {% endblock content %}
+
+{% block tail %}
+<script src="/static/query.js"></script>
+{% endblock tail %}
