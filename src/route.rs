@@ -375,6 +375,9 @@ pub async fn stats_save_data(pool: web::Data<MySqlPool>) -> Result<HttpResponse>
             .fetch_all(&**pool)
             .await?;
         datas.push(json!({ date.to_string(): s }));
+        if s.iter().all(|st| st.no_business()) {
+            break;
+        }
     }
     let banks = sqlx::query("select bank_name from bank")
         .map(|x: MySqlRow| -> String { x.get("bank_name") })
@@ -397,6 +400,9 @@ pub async fn stats_check_data(pool: web::Data<MySqlPool>) -> Result<HttpResponse
             .fetch_all(&**pool)
             .await?;
         datas.push(json!({ date.to_string(): s }));
+        if s.iter().all(|st| st.no_business()) {
+            break;
+        }
     }
     let banks = sqlx::query("select bank_name from bank")
         .map(|x: MySqlRow| -> String { x.get("bank_name") })

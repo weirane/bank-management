@@ -203,9 +203,21 @@ pub struct SaveStat {
     pub total_customer: i64,
 }
 
+impl SaveStat {
+    pub fn no_business(&self) -> bool {
+        self.total_balance == 0f64.into() && self.total_customer == 0
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct LoanStat {
     pub bank: String,
     pub total_loanpay: BigDecimal,
     pub total_customer: i64,
+}
+
+impl LoanStat {
+    pub fn no_business(&self) -> bool {
+        self.total_loanpay == 0f64.into() && self.total_customer == 0
+    }
 }
