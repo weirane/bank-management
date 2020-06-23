@@ -58,13 +58,17 @@ const constructDatas = (json, interval, extract) => {
     }, {});
     let later = false;
     for (const kv of json.datas) {
-        const [date, stats] = Object.entries(kv)[0];
+        let [date, stats] = Object.entries(kv)[0];
         if (later) {
             const objdate = new Date(date);
             if (interval === 'year') {
                 if (objdate.getUTCMonth() !== 0) {
                     continue;
                 }
+                const y = objdate.getUTCFullYear() - 1;
+                const mm = objdate.getMonth().toString().padStart(2, '0');
+                const dd = objdate.getDate().toString().padStart(2, '0');
+                date = `${y}-${mm}-${dd}`;
             } else if (interval === 'season') {
                 if (objdate.getUTCMonth() % 3 !== 0) {
                     continue;
