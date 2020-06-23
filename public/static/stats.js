@@ -21,7 +21,7 @@ const getData = async () => {
     return json;
 };
 
-const constructOption = (json, datas, title) => {
+const constructOption = (json, datas, interval, title) => {
     return {
         title: { text: title },
         tooltip: { trigger: 'axis' },
@@ -42,20 +42,37 @@ const constructOption = (json, datas, title) => {
             return {
                 name: b,
                 type: 'line',
-                data: datas[b].reverse(),
+                data: datas[b]
+                    .reverse()
+                    .map(([d, n]) => [d.substring(0, d.length - (interval === 'year' ? 6 : 3)), n]),
             };
         }),
     };
 };
 
 /** convert `json` to the data for echarts */
-const constructDatas = (json, extract) => {
+const constructDatas = (json, interval, extract) => {
     const datas = json.banks.reduce((obj, cur) => {
         obj[cur] = new Array();
         return obj;
     }, {});
+    let later = false;
     for (const kv of json.datas) {
         const [date, stats] = Object.entries(kv)[0];
+        if (later) {
+            const objdate = new Date(date);
+            if (interval === 'year') {
+                if (objdate.getUTCMonth() !== 0) {
+                    continue;
+                }
+            } else if (interval === 'season') {
+                if (objdate.getUTCMonth() % 3 !== 0) {
+                    continue;
+                }
+            }
+        } else {
+            later = true;
+        }
         for (const b of json.banks) {
             const d = findBankObj(stats, b);
             datas[b].push([date, extract(d)]);
@@ -64,22 +81,38 @@ const constructDatas = (json, extract) => {
     return datas;
 };
 
-function drawCustomer(eid, json) {
+function drawCustomer(eid, json, interval) {
     const div = document.getElementById(eid);
-    const datas = constructDatas(json, (d) => d.total_customer);
+    const datas = constructDatas(json, interval, (d) => d.total_customer);
     const chart = echarts.init(div);
-    chart.setOption(constructOption(json, datas, '客户统计'));
+    chart.setOption(constructOption(json, datas, interval, '客户统计'));
 }
 
-function drawBusiness(eid, json) {
+function drawBusiness(eid, json, interval) {
     const div = document.getElementById(eid);
-    const datas = constructDatas(json, (d) => (TYPE == 'save' ? d.total_balance : d.total_loanpay));
+    const datas = constructDatas(json, interval, (d) =>
+        TYPE == 'save' ? d.total_balance : d.total_loanpay
+    );
     const chart = echarts.init(div);
-    chart.setOption(constructOption(json, datas, '金额统计'));
+    chart.setOption(constructOption(json, datas, interval, '金额统计'));
 }
+
+const intervalSel = document.getElementById('interval');
+for (const o of intervalSel.getElementsByTagName('option')) {
+    o.addEventListener('click', (_) => {
+        if (renderWithInterval) {
+            renderWithInterval(intervalSel.value);
+        }
+    });
+}
+
+let renderWithInterval;
 
 (async () => {
     const json = await getData(TYPE);
-    drawCustomer('customer-stat', json);
-    drawBusiness('business-stat', json);
+    renderWithInterval = (interval) => {
+        drawCustomer('customer-stat', json, interval);
+        drawBusiness('business-stat', json, interval);
+    };
+    renderWithInterval('month');
 })();
