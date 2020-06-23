@@ -18,6 +18,9 @@ pub enum Error {
     #[error("template: {0}")]
     Tera(#[from] tera::Error),
 
+    #[error("serde: {0}")]
+    Serde(#[from] serde_json::Error),
+
     /// Malformed request
     #[error("bad request: {0}")]
     BadRequest(&'static str),
@@ -38,8 +41,8 @@ impl ResponseError for Error {
         use Error::*;
         match self {
             Actix(e) => e.as_response_error().status_code(),
-            Sqlx(_) | Tera(_) => StatusCode::INTERNAL_SERVER_ERROR,
             BadRequest(_) => StatusCode::BAD_REQUEST,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

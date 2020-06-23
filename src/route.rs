@@ -15,7 +15,7 @@ use crate::types::{Customer, Loan};
 use crate::types::{LoanStat, SaveStat};
 use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
-type SMap = HashMap<String, String>;
+pub type SMap = HashMap<String, String>;
 
 macro_rules! db_error_msg {
     ($err:expr, $($code:literal => $($test:ident $str:literal : $msg:expr)+)+) => {{
@@ -214,15 +214,37 @@ pub async fn change_account(
 
 #[post("/account/query")]
 pub async fn query_account(
-    sess: Session,
     form: web::Form<SMap>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    eprintln!("{:#?}", form);
-    // TODO
-    Ok(HttpResponse::Found()
-        .header("location", "/account")
-        .finish())
+    let atype = form.get("type").ok_or(Error::BadRequest("type"))?;
+    let ret = match atype.as_str() {
+        "" => {
+            // any
+            let save = account::query_save(&form, &pool).await?;
+            let check = account::query_check(&form, &pool).await?;
+            let values: Vec<serde_json::Value> = save
+                .iter()
+                .map(serde_json::to_value)
+                .chain(check.iter().map(serde_json::to_value))
+                .collect::<std::result::Result<_, serde_json::Error>>()?;
+            serde_json::to_value(values)?
+        }
+        "0" => {
+            // save
+            account::query_save(&form, &pool)
+                .await
+                .and_then(|v| serde_json::to_value(v).map_err(Into::into))?
+        }
+        "1" => {
+            // check
+            account::query_check(&form, &pool)
+                .await
+                .and_then(|v| serde_json::to_value(v).map_err(Into::into))?
+        }
+        _ => return Err(Error::BadRequest("type")),
+    };
+    Ok(HttpResponse::Ok().json(ret))
 }
 
 #[post("/loan/add")]

@@ -1,5 +1,6 @@
 use crate::error::Result;
 use bigdecimal::BigDecimal;
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 
@@ -37,6 +38,29 @@ impl NewCustomer {
         .await
         .map_err(|e| e.into())
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct SaveAccount {
+    pub id: String,
+    pub bank: String,
+    pub open_date: NaiveDate,
+    pub balance: BigDecimal,
+    #[serde(rename = "type")]
+    pub type_: String,
+    pub currency: String,
+    pub interest_rate: BigDecimal,
+}
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct CheckAccount {
+    pub id: String,
+    pub bank: String,
+    pub open_date: NaiveDate,
+    pub balance: BigDecimal,
+    #[serde(rename = "type")]
+    pub type_: String,
+    pub credit: BigDecimal,
 }
 
 #[derive(Debug, Deserialize)]

@@ -51,7 +51,30 @@
           type="button" class="btn btn-primary">提交</button>
 </form>
 
+<div class="pt-4 empty" id="result">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">类别</th>
+        <th scope="col">开户银行</th>
+        <th scope="col">开户日期</th>
+        <th scope="col">余额</th>
+        <th scope="col">其它信息</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+
 <style>
+#result.empty::before {
+  content: "无结果";
+}
+#result.empty table {
+  display: none;
+}
 #type-save.hide,
 #type-check.hide {
   display: none;
