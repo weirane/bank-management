@@ -97,6 +97,53 @@ function drawBusiness(eid, json, interval) {
     chart.setOption(constructOption(json, datas, interval, '金额统计'));
 }
 
+const createTables = (json, interval) => {
+    const tables = document.getElementById('tables');
+    tables.innerHTML = '';
+    const cusDatas = constructDatas(json, interval, (d) => d.total_customer);
+    const busDatas = constructDatas(json, interval, (d) =>
+        TYPE == 'save' ? d.total_balance : d.total_loanpay
+    );
+    for (const b of json.banks) {
+        const h5 = document.createElement('h5');
+        h5.innerText = b;
+        tables.appendChild(h5);
+        const table = document.createElement('table');
+        table.classList.add('table');
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr>
+              <th scope="col">日期</th>
+              <th scope="col">新客户数</th>
+              <th scope="col">金额</th>
+            </tr>`;
+        table.appendChild(thead);
+        const tbody = document.createElement('tbody');
+        tbody.innerHTML = '';
+        // customer and business datas for this bank
+        const bcus = cusDatas[b];
+        const bbus = busDatas[b];
+        // two sentinels for calculating differences between dates
+        bcus.push(['', 0, 0]);
+        bbus.push(['', 0, 0]);
+        for (let i = 0; i < bcus.length - 1; i++) {
+            const tr = document.createElement('tr');
+            const rawdate = bcus[i][0];
+            const date = rawdate.substring(0, rawdate.length - (interval === 'year' ? 6 : 3));
+            const cusnum = bcus[i][1] - bcus[i + 1][1];
+            const busnum = bbus[i][1] - bbus[i + 1][1];
+            for (const text of [date, cusnum, busnum]) {
+                const el = document.createElement('td');
+                el.innerText = text;
+                tr.appendChild(el);
+            }
+            tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        tables.appendChild(table);
+    }
+};
+
 const intervalSel = document.getElementById('interval');
 for (const o of intervalSel.getElementsByTagName('option')) {
     o.addEventListener('click', (_) => {
@@ -113,6 +160,7 @@ let renderWithInterval;
     renderWithInterval = (interval) => {
         drawCustomer('customer-stat', json, interval);
         drawBusiness('business-stat', json, interval);
+        createTables(json, interval);
     };
     renderWithInterval('month');
 })();
