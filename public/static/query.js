@@ -1,4 +1,4 @@
-async function query(path, form_id) {
+async function query(path, form_id, fields) {
     const form = document.getElementById(form_id);
     if (!form.checkValidity()) {
         return;
@@ -23,9 +23,9 @@ async function query(path, form_id) {
     result.classList.remove('empty');
     for (const cus of customers) {
         const tr = document.createElement('tr');
-        for (const key of ['id', 'name', 'tel', 'address']) {
+        for (const key of fields) {
             const el = document.createElement('td');
-            el.innerText = cus[key];
+            el.innerText = cus[key].trim();
             tr.appendChild(el);
         }
         tbody.appendChild(tr);

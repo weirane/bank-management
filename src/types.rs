@@ -119,7 +119,7 @@ pub struct Loan {
     pub id: String,
     pub bank: String,
     pub amount: BigDecimal,
-    pub state: i32,
+    pub state: String,
 }
 
 #[derive(Debug, Deserialize)]

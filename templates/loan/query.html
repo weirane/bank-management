@@ -22,14 +22,39 @@
       <label for="address" class="col-form-label">状态</label>
       <select type="text" class="col-sm-10 form-control" name="state" />
         <option selected value="">不选择</option>
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
+        <option value="0">未开始发放</option>
+        <option value="1">正在发放</option>
+        <option value="2">已全部发放</option>
       </select>
     </div>
   </div>
-  <button type="button" onclick="query('/loan/query', 'query-loan')" class="btn btn-primary">提交</button>
+  <button onclick="query('/loan/query', 'query-loan', ['id', 'bank', 'amount', 'state'])"
+          type="button" class="btn btn-primary">提交</button>
 </form>
+
+<div class="pt-4 empty" id="result">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">银行</th>
+        <th scope="col">数额</th>
+        <th scope="col">状态</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+
+<style>
+#result.empty::before {
+  content: "无结果";
+}
+#result.empty table {
+  display: none;
+}
+</style>
 
 {% endblock content %}
 
