@@ -16,7 +16,7 @@
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">开户银行</label>
+        <label for="bank" class="col-sm-4 col-form-label">开户银行</label>
         <div class="col-sm-8">
           <select class="form-control" name="bank">
             {% for b in banks %}
@@ -26,25 +26,25 @@
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">余额</label>
+        <label for="balance" class="col-sm-4 col-form-label">余额</label>
         <div class="col-sm-8">
           <input type="text" class="form-control" name="balance" required />
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">货币类型</label>
+        <label for="currency" class="col-sm-4 col-form-label">货币类型</label>
         <div class="col-sm-8">
           <input type="text" class="form-control" name="currency" maxlength="3" pattern="[A-Z]{3}" required />
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">利率</label>
+        <label for="interest_rate" class="col-sm-4 col-form-label">利率</label>
         <div class="col-sm-8">
           <input type="text" class="form-control" name="interest_rate" required />
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">客户</label>
+        <label for="customers" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
           <select class="form-control" name="customers" multiple required>
             {% for c in customers %}
@@ -72,7 +72,7 @@
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">开户银行</label>
+        <label for="bank" class="col-sm-4 col-form-label">开户银行</label>
         <div class="col-sm-8">
           <select class="form-control" name="bank">
             {% for b in banks %}
@@ -82,19 +82,19 @@
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">余额</label>
+        <label for="balance" class="col-sm-4 col-form-label">余额</label>
         <div class="col-sm-8">
           <input type="text" class="form-control" name="balance" required />
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">透支额</label>
+        <label for="credit" class="col-sm-4 col-form-label">透支额</label>
         <div class="col-sm-8">
           <input type="text" class="form-control" name="credit" required />
         </div>
       </div>
       <div class="form-group row">
-        <label for="id" class="col-sm-4 col-form-label">客户</label>
+        <label for="customers" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
           <select class="form-control" name="customers" multiple required>
             {% for c in customers %}
