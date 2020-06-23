@@ -8,10 +8,12 @@
 
 <h4>贷款业务统计</h4>
 
-<div id="main" data-type="check" style="width: 600px;height:400px;"></div>
+<div class="pt-4" id="customer-stat" style="width: 1000px; height: 400px;"></div>
+
+<div class="pt-4" id="business-stat" style="width: 1000px; height: 400px;"></div>
 
 {% endblock content %}
 
 {% block tail %}
-<script src="/static/stats.js"></script>
+<script src="/static/stats.js?type=check"></script>
 {% endblock tail %}
