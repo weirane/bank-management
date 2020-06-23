@@ -365,7 +365,7 @@ fn gen_dates(years: i32) -> impl Iterator<Item = NaiveDate> {
 
 #[post("/stats/save")]
 pub async fn stats_save_data(pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
-    let mut ret = Vec::new();
+    let mut datas = Vec::new();
     for date in gen_dates(3) {
         // sqlx::query_as!(Foo, include_str!("...")) is not available
         // launchbadge/sqlx#388
@@ -374,22 +374,38 @@ pub async fn stats_save_data(pool: web::Data<MySqlPool>) -> Result<HttpResponse>
             .bind(date)
             .fetch_all(&**pool)
             .await?;
-        ret.push(json!({ date.to_string(): s }));
+        datas.push(json!({ date.to_string(): s }));
     }
+    let banks = sqlx::query("select bank_name from bank")
+        .map(|x: MySqlRow| -> String { x.get("bank_name") })
+        .fetch_all(&**pool)
+        .await?;
+    let ret = json!({
+        "banks": banks,
+        "datas": datas
+    });
     Ok(HttpResponse::Ok().json(ret))
 }
 
 #[post("/stats/check")]
 pub async fn stats_check_data(pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
-    let mut ret = Vec::new();
+    let mut datas = Vec::new();
     for date in gen_dates(3) {
         let s: Vec<LoanStat> = sqlx::query_as(include_str!("../sql/check_stat.inc.sql"))
             .bind(date)
             .bind(date)
             .fetch_all(&**pool)
             .await?;
-        ret.push(json!({ date.to_string(): s }));
+        datas.push(json!({ date.to_string(): s }));
     }
+    let banks = sqlx::query("select bank_name from bank")
+        .map(|x: MySqlRow| -> String { x.get("bank_name") })
+        .fetch_all(&**pool)
+        .await?;
+    let ret = json!({
+        "banks": banks,
+        "datas": datas
+    });
     Ok(HttpResponse::Ok().json(ret))
 }
 
