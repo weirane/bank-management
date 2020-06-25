@@ -1,11 +1,9 @@
 drop view if exists checkaccounts;
 drop view if exists saveaccounts;
 drop view if exists checkstat;
-drop view if exists _checkstat;
 drop view if exists savestat;
-drop view if exists _savestat;
 drop view if exists loanstat;
-drop view if exists _loanstat;
+drop view if exists loan_with_paid;
 
 create view checkaccounts
     (account_id, bank, type, balance, open_date, credit) as
@@ -79,3 +77,12 @@ from bank left join(
             group by bank
         ) t2 using(bank)
 ) t3 on bank.bank_name = t3.bank;
+
+create view loan_with_paid(loan_id, amount, bank, state, paid) as
+select loan_id, amount, bank, state, paid
+from loan left join(
+    select loan_id, coalesce(sum(loan_pay.amount),0) as paid
+    from loan left join loan_pay
+    using(loan_id)
+    group by loan_id
+) t using(loan_id);

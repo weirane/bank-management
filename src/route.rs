@@ -339,9 +339,9 @@ pub async fn query_loan(form: web::Form<SMap>, pool: web::Data<MySqlPool>) -> Re
     let empty = String::new();
     let ret: Vec<Loan> = sqlx::query_as!(
         Loan,
-        "select loan_id as id, bank, amount,
+        "select loan_id as id, bank, amount, paid,
             substr('未开始发放正在发放 已全部发放', state*5+1, 5) as state
-        from loan where
+        from loan_with_paid where
         loan_id like concat('%', ?, '%')
         and bank like concat('%', ?, '%')
         and amount like concat('%', ?, '%')
