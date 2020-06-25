@@ -463,8 +463,20 @@ macro_rules! get_routes {
 
 get_routes!(index, "/", "index.html");
 
-get_routes!(customer_add, "/customer/add", "customer/add.html");
-get_routes!(customer_del, "/customer/del", "customer/del.html");
+get_routes!(customer_add, "/customer/add", "customer/add.html", {
+    let contacters = sqlx::query("select cast(contacter_id as char(10)) as id from contacter")
+        .map(|x: MySqlRow| -> String { x.get("id") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("contacters", &contacters);
+});
+get_routes!(customer_del, "/customer/del", "customer/del.html", {
+    let customers = sqlx::query("select customer_id from customer")
+        .map(|x: MySqlRow| -> String { x.get("customer_id") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("customers", &customers);
+});
 get_routes!(customer_change, "/customer/change", "customer/change.html");
 get_routes!(customer_query, "/customer", "customer/query.html");
 
@@ -480,7 +492,13 @@ get_routes!(account_add, "/account/add", "account/add.html", {
     ctx.insert("banks", &banks);
     ctx.insert("customers", &customers);
 });
-get_routes!(account_del, "/account/del", "account/del.html");
+get_routes!(account_del, "/account/del", "account/del.html", {
+    let accounts = sqlx::query("select account_id from account")
+        .map(|x: MySqlRow| -> String { x.get("account_id") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("accounts", &accounts);
+});
 get_routes!(account_change, "/account/change", "account/change.html", {
     let banks = sqlx::query("select bank_name from bank")
         .map(|x: MySqlRow| -> String { x.get("bank_name") })
@@ -502,7 +520,13 @@ get_routes!(loan_add, "/loan/add", "loan/add.html", {
     ctx.insert("banks", &banks);
     ctx.insert("customers", &customers);
 });
-get_routes!(loan_del, "/loan/del", "loan/del.html");
+get_routes!(loan_del, "/loan/del", "loan/del.html", {
+    let loans = sqlx::query("select loan_id from loan")
+        .map(|x: MySqlRow| -> String { x.get("loan_id") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("loans", &loans);
+});
 get_routes!(loan_issue, "/loan/issue", "loan/issue.html");
 get_routes!(loan_query, "/loan", "loan/query.html");
 
