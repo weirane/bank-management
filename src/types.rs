@@ -10,6 +10,8 @@ pub struct Customer {
     pub name: String,
     pub tel: String,
     pub address: String,
+    pub contacter_id: String,
+    pub relation: String,
 }
 
 #[derive(Debug, Deserialize)]

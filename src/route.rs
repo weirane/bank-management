@@ -102,7 +102,9 @@ pub async fn query_customer(
     let empty = String::new();
     let ret: Vec<Customer> = sqlx::query_as!(
         Customer,
-        "select customer_id as id, name, tel, address from customer where
+        "select customer_id as id, name, tel,
+            address, cast(contacter_id as char(10)) as contacter_id, relation
+        from customer where
         customer_id like concat('%', ?, '%')
         and name like concat('%', ?, '%')
         and tel like concat('%', ?, '%')
