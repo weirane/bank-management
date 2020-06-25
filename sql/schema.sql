@@ -97,8 +97,8 @@ create table make_loan (
     loan_id char(11) not null,
     customer_id char(18) not null,
     constraint PK_MAKE_LOAN primary key (loan_id, customer_id),
-    constraint PK_MKLOAN_LOAN foreign key (loan_id) references loan(loan_id) on delete cascade,
-    constraint PK_MKLOAN_CUS foreign key (customer_id) references customer(customer_id)
+    constraint FK_MKLOAN_LOAN foreign key (loan_id) references loan(loan_id) on delete cascade,
+    constraint FK_MKLOAN_CUS foreign key (customer_id) references customer(customer_id)
 );
 
 create table loan_pay (

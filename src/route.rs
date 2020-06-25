@@ -65,9 +65,21 @@ pub async fn del_customer(
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
     let id = form.get("id").ok_or(Error::BadRequest("no id"))?;
-    let n = customer::del(&id, &pool).await?;
-    if n == 0 {
-        sess.set("error_msg", "客户不存在".to_owned()).ok();
+    match customer::del(&id, &pool).await {
+        Ok(0) => {
+            sess.set("error_msg", "客户不存在".to_owned()).ok();
+        }
+        Err(Error::Sqlx(sqlx::Error::Database(e))) => {
+            log::warn!("{}", e);
+            let msg = db_error_msg!(e,
+                "23000" =>
+                    contains "FK_CUS_HAS" : |_| "此客户有关联账户"
+                    contains "FK_MKLOAN_CUS" : |_| "此客户有贷款记录"
+            );
+            sess.set("error_msg", msg).ok();
+        }
+        Err(e) => return Err(e),
+        _ => (),
     }
     Ok(HttpResponse::Found()
         .header("location", "/customer/del")
