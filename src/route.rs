@@ -320,7 +320,7 @@ pub async fn issue_loan(
             log::warn!("{}", e);
             let msg = db_error_msg!(e,
                 "23000" =>
-                    contains "a foreign key constraint fails" : |_| "ID 不存在"
+                    contains "FK_LOANPAY_LOAN" : |_| "ID 不存在"
                 "45002" =>
                     eq "超出贷款金额" : |m| m
             );
