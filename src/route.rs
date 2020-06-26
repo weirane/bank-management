@@ -504,7 +504,17 @@ get_routes!(account_change, "/account/change", "account/change.html", {
         .map(|x: MySqlRow| -> String { x.get("bank_name") })
         .fetch_all(&**pool)
         .await?;
+    let save_accounts = sqlx::query("select account_id from account where type = 0")
+        .map(|x: MySqlRow| -> String { x.get("account_id") })
+        .fetch_all(&**pool)
+        .await?;
+    let check_accounts = sqlx::query("select account_id from account where type = 1")
+        .map(|x: MySqlRow| -> String { x.get("account_id") })
+        .fetch_all(&**pool)
+        .await?;
     ctx.insert("banks", &banks);
+    ctx.insert("save_accounts", &save_accounts);
+    ctx.insert("check_accounts", &check_accounts);
 });
 get_routes!(account_query, "/account", "account/query.html");
 
