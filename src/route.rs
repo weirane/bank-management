@@ -527,7 +527,13 @@ get_routes!(loan_del, "/loan/del", "loan/del.html", {
         .await?;
     ctx.insert("loans", &loans);
 });
-get_routes!(loan_issue, "/loan/issue", "loan/issue.html");
+get_routes!(loan_issue, "/loan/issue", "loan/issue.html", {
+    let loans = sqlx::query("select loan_id from loan")
+        .map(|x: MySqlRow| -> String { x.get("loan_id") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("loans", &loans);
+});
 get_routes!(loan_query, "/loan", "loan/query.html");
 
 get_routes!(stats_save, "/stats/save", "stats/save.html");

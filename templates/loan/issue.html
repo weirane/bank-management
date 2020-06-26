@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "with-choices.html" %}
 
 {% block content %}
 
@@ -8,7 +8,11 @@
   <div class="form-group row">
     <label for="id" class="col-sm-1 col-form-label">ID</label>
     <div class="col-sm-3">
-      <input type="text" class="form-control" name="id" maxlength="11" required />
+      <select class="form-control choices-issue" name="id">
+        {% for lo in loans %}
+        <option value="{{ lo }}">{{ lo }}</option>
+        {% endfor %}
+      </select>
     </div>
   </div>
   <div class="form-group row">
