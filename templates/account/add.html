@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "with-choices.html" %}
 
 {% block content %}
 
@@ -18,7 +18,7 @@
       <div class="form-group row">
         <label for="bank" class="col-sm-4 col-form-label">开户银行</label>
         <div class="col-sm-8">
-          <select class="form-control" name="bank">
+          <select class="form-control choices-issue" name="bank">
             {% for b in banks %}
             <option value="{{ b }}">{{ b }}</option>
             {% endfor %}
@@ -46,7 +46,7 @@
       <div class="form-group row">
         <label for="customers" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
-          <select class="form-control" name="customers" multiple required>
+          <select class="form-control choices-issue" name="customers" multiple required>
             {% for c in customers %}
             <option value="{{ c }}">{{ c }}</option>
             {% endfor %}
@@ -74,7 +74,7 @@
       <div class="form-group row">
         <label for="bank" class="col-sm-4 col-form-label">开户银行</label>
         <div class="col-sm-8">
-          <select class="form-control" name="bank">
+          <select class="form-control choices-issue" name="bank">
             {% for b in banks %}
             <option value="{{ b }}">{{ b }}</option>
             {% endfor %}
@@ -96,7 +96,7 @@
       <div class="form-group row">
         <label for="customers" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
-          <select class="form-control" name="customers" multiple required>
+          <select class="form-control choices-issue" name="customers" multiple required>
             {% for c in customers %}
             <option value="{{ c }}">{{ c }}</option>
             {% endfor %}
@@ -115,5 +115,6 @@
 {% endblock content %}
 
 {% block tail %}
+{{ super() }}
 <script src="/static/json-form.js"></script>
 {% endblock tail %}
