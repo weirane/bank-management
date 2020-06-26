@@ -52,7 +52,7 @@ for each row begin
         signal sqlstate '45001' set message_text = '账户不存在';
     end if;
     select count(account_id) into n from account right join has_account using(account_id)
-    where customer_id = new.customer_id and account.bank = b and type = t;
+    where customer_real_id = new.customer_real_id and account.bank = b and type = t;
     if n != 0 then
         if t = 0 then
             signal sqlstate '45000' set message_text = '储蓄账户已存在';

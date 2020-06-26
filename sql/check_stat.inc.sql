@@ -12,7 +12,7 @@ from bank left join(
             group by loan_id
         ) t1 join
         (
-            select bank, count(distinct customer_id) as total_customer
+            select bank, count(distinct customer_real_id) as total_customer
             from (loan right join loan_pay using(loan_id))
                  left join make_loan using(loan_id)
             where paytime < ?

@@ -127,14 +127,9 @@ impl NewAccount {
                 (id, customers)
             }
         };
-        let fs = customers.iter().map(|c| {
-            sqlx::query!(
-                "insert into has_account (account_id, customer_id) values (?, ?)",
-                id,
-                c
-            )
-            .execute(pool)
-        });
+        let fs = customers
+            .iter()
+            .map(|c| sqlx::query!("call add_has_account(?, ?)", id, c).execute(pool));
         futures::future::try_join_all(fs).await?;
         Ok(())
     }
@@ -167,14 +162,10 @@ impl NewLoan {
         )
         .execute(pool)
         .await?;
-        let fs = self.customers.iter().map(|c| {
-            sqlx::query!(
-                "insert into make_loan (loan_id, customer_id) values (?, ?)",
-                self.id,
-                c
-            )
-            .execute(pool)
-        });
+        let fs = self
+            .customers
+            .iter()
+            .map(|c| sqlx::query!("call add_make_loan(?, ?)", self.id, c).execute(pool));
         futures::future::try_join_all(fs).await?;
         Ok(())
     }

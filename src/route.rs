@@ -46,7 +46,7 @@ pub async fn add_customer(
             let msg = db_error_msg!(e,
                 "23000" =>
                     contains "FK_CUS_CONTACT" : |_| "联系人不存在"
-                    starts_with "Duplicate entry" : |_| "客户已存在"
+                    contains "UNIQ_CUSTOMER_ID" : |_| "客户已存在"
             );
             sess.set("error_msg", msg).ok();
         } else {
@@ -92,12 +92,13 @@ pub async fn change_customer(
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
     let id = form.remove("id").ok_or(Error::BadRequest("no id"))?;
+    let real_id = customer::get_real_id(&id, &pool).await?;
     let fs = form.iter().filter_map(|(k, v)| {
         let v = v.trim();
         if v.is_empty() {
             None
         } else {
-            Some(customer::change(&id, k, v, &pool))
+            Some(customer::change(real_id, k, v, &pool))
         }
     });
     try_join_all(fs).await?;
@@ -477,7 +478,19 @@ get_routes!(customer_del, "/customer/del", "customer/del.html", {
         .await?;
     ctx.insert("customers", &customers);
 });
-get_routes!(customer_change, "/customer/change", "customer/change.html");
+#[rustfmt::skip]
+get_routes!(customer_change, "/customer/change", "customer/change.html", {
+    let customers = sqlx::query("select customer_id from customer")
+        .map(|x: MySqlRow| -> String { x.get("customer_id") })
+        .fetch_all(&**pool)
+        .await?;
+    let contacters = sqlx::query("select cast(contacter_id as char(10)) as id from contacter")
+        .map(|x: MySqlRow| -> String { x.get("id") })
+        .fetch_all(&**pool)
+        .await?;
+    ctx.insert("customers", &customers);
+    ctx.insert("contacters", &contacters);
+});
 get_routes!(customer_query, "/customer", "customer/query.html");
 
 get_routes!(account_add, "/account/add", "account/add.html", {

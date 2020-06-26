@@ -33,7 +33,7 @@ from bank left join(
             group by bank
         ) t1 join
         (
-            select bank, count(distinct customer_id) as total_customer
+            select bank, count(distinct customer_real_id) as total_customer
             from account left join has_account using(account_id)
             where type = 1
             group by bank
@@ -52,7 +52,7 @@ from bank left join(
             group by bank
         ) t1 join
         (
-            select bank, count(distinct customer_id) as total_customer
+            select bank, count(distinct customer_real_id) as total_customer
             from account left join has_account using(account_id)
             where type = 0
             group by bank
@@ -71,7 +71,7 @@ from bank left join(
             group by bank
         ) t1 join
         (
-            select bank, count(distinct customer_id) as total_customer
+            select bank, count(distinct customer_real_id) as total_customer
             from loan, make_loan
             where loan.loan_id = make_loan.loan_id
             group by bank

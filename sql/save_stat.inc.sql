@@ -12,7 +12,7 @@ from bank left join(
             group by bank
         ) t1 join
         (
-            select bank, count(distinct customer_id) as total_customer
+            select bank, count(distinct customer_real_id) as total_customer
             from account left join has_account using(account_id)
             where open_date < ?
             group by bank

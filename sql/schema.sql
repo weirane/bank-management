@@ -36,7 +36,8 @@ create table contacter (
 );
 
 create table customer (
-    customer_id char(18) not null,
+    customer_real_id int not null auto_increment,
+    customer_id char(18) not null,  -- national ID number
     name varchar(32) not null,
     tel char(20) not null,
     address varchar(128) not null,
@@ -44,7 +45,8 @@ create table customer (
     relation varchar(10) not null,
     loan_emp char(18),
     deposit_emp char(18),
-    constraint PK_CUSTOMER primary key (customer_id),
+    constraint PK_CUSTOMER primary key (customer_real_id),
+    constraint UNIQ_CUSTOMER_ID unique (customer_id),
     constraint FK_CUS_CONTACT foreign key (contacter_id) references contacter(contacter_id),
     constraint FK_CUS_LOANRES foreign key (loan_emp) references employee(emp_id),
     constraint FK_CUS_ACCRES foreign key (deposit_emp) references employee(emp_id)
@@ -77,10 +79,10 @@ create table checkacc (
 
 create table has_account (
     account_id char(6) not null,
-    customer_id char(18) not null,
+    customer_real_id int not null,
     last_visit datetime not null default current_timestamp on update current_timestamp,
-    constraint PK_HAS_ACCOUNT primary key (account_id, customer_id),
-    constraint FK_CUS_HAS foreign key (customer_id) references customer(customer_id),
+    constraint PK_HAS_ACCOUNT primary key (account_id, customer_real_id),
+    constraint FK_CUS_HAS foreign key (customer_real_id) references customer(customer_real_id),
     constraint FK_ACC_HAS foreign key (account_id) references account(account_id) on delete cascade
 );
 
@@ -95,10 +97,10 @@ create table loan (
 
 create table make_loan (
     loan_id char(11) not null,
-    customer_id char(18) not null,
-    constraint PK_MAKE_LOAN primary key (loan_id, customer_id),
+    customer_real_id int not null,
+    constraint PK_MAKE_LOAN primary key (loan_id, customer_real_id),
     constraint FK_MKLOAN_LOAN foreign key (loan_id) references loan(loan_id) on delete cascade,
-    constraint FK_MKLOAN_CUS foreign key (customer_id) references customer(customer_id)
+    constraint FK_MKLOAN_CUS foreign key (customer_real_id) references customer(customer_real_id)
 );
 
 create table loan_pay (
