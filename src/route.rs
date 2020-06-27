@@ -11,7 +11,7 @@ use tera::Tera;
 
 use crate::action::{account, customer, loan};
 use crate::error::{Error, Result};
-use crate::types::{Customer, Loan};
+use crate::types::Customer;
 use crate::types::{LoanStat, SaveStat};
 use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
@@ -337,24 +337,7 @@ pub async fn issue_loan(
 
 #[post("/loan/query")]
 pub async fn query_loan(form: web::Form<SMap>, pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
-    let empty = String::new();
-    let ret: Vec<Loan> = sqlx::query_as!(
-        Loan,
-        "select loan_id as id, bank, amount, paid,
-            substr('未开始发放正在发放 已全部发放', state*5+1, 5) as state
-        from loan_with_paid where
-        loan_id like concat('%', ?, '%')
-        and bank like concat('%', ?, '%')
-        and amount like concat('%', ?, '%')
-        and state like concat('%', ?, '%')
-        ",
-        form.get("id").unwrap_or(&empty),
-        form.get("bank").unwrap_or(&empty),
-        form.get("amount").unwrap_or(&empty),
-        form.get("state").unwrap_or(&empty),
-    )
-    .fetch_all(&**pool)
-    .await?;
+    let ret = loan::query(&form, &pool).await?;
     Ok(HttpResponse::Ok().json(ret))
 }
 
