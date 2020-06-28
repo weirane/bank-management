@@ -70,16 +70,17 @@ async fn main() -> std::io::Result<()> {
             .service(stats_save_data)
             .service(stats_check_data)
             .default_service(
-                actix_files::Files::new("", "public").default_handler(
-                    web::resource("")
-                        .route(web::get().to(p404))
-                        // all requests that are not GET
-                        .route(
-                            web::route()
-                                .guard(guard::Not(guard::Get()))
-                                .to(HttpResponse::MethodNotAllowed),
-                        ),
-                ),
+                actix_files::Files::new("", concat!(env!("CARGO_MANIFEST_DIR"), "/public"))
+                    .default_handler(
+                        web::resource("")
+                            .route(web::get().to(p404))
+                            // all requests that are not GET
+                            .route(
+                                web::route()
+                                    .guard(guard::Not(guard::Get()))
+                                    .to(HttpResponse::MethodNotAllowed),
+                            ),
+                    ),
             )
     })
     .bind(bind)?
