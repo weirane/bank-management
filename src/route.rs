@@ -11,7 +11,7 @@ use tera::Tera;
 
 use crate::action::{account, customer, loan};
 use crate::error::{Error, Result};
-use crate::types::{AccountCustomer, Customer};
+use crate::types::{AccountCustomer, Customer, CustomerId};
 use crate::types::{LoanStat, SaveStat};
 use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
@@ -265,17 +265,9 @@ pub async fn query_account(
 #[get("/account/customers")]
 pub async fn account_customers(pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
     use tokio::stream::StreamExt;
-    // Using sqlx::query! gives us Record { customer_id: Option<String>, ... }, so define the
-    // Record manually here.
-    #[derive(Debug, serde::Deserialize, sqlx::FromRow)]
-    struct Record {
-        account_id: String,
-        customer_id: String,
-    }
-    let mut cursor = sqlx::query_as!(
-        Record,
-        "select account_id, customer_id
-        from has_account left join customer using(customer_real_id)"
+    let mut cursor = sqlx::query!(
+        "select account_id, convert(customer_real_id, char(10)) as customer_id
+        from has_account"
     )
     .fetch(&**pool);
     let mut ret = HashMap::new();
@@ -296,10 +288,14 @@ pub async fn change_account_customer(
     sqlx::query!("delete from has_account where account_id = ?", id)
         .execute(&**pool)
         .await?;
-    let fs = form
-        .customers
-        .iter()
-        .map(|c| sqlx::query!("call add_has_account(?, ?)", id, c).execute(&**pool));
+    let fs = form.customers.iter().map(|c| {
+        sqlx::query!(
+            "insert into has_account(account_id, customer_real_id) values (?, ?)",
+            id,
+            c
+        )
+        .execute(&**pool)
+    });
     futures::future::join_all(fs).await;
     Ok(HttpResponse::Ok().finish())
 }
@@ -523,12 +519,14 @@ get_routes!(account_add, "/account/add", "account/add.html", {
         .map(|x: MySqlRow| -> String { x.get("bank_name") })
         .fetch_all(&**pool)
         .await?;
-    let customers = sqlx::query("select customer_id from customer")
-        .map(|x: MySqlRow| -> String { x.get("customer_id") })
-        .fetch_all(&**pool)
-        .await?;
+    let customers = sqlx::query_as!(
+        CustomerId,
+        "select customer_real_id as real_id, customer_id as id from customer"
+    )
+    .fetch_all(&**pool)
+    .await?;
     ctx.insert("banks", &banks);
-    ctx.insert("customers", &customers);
+    ctx.insert("customerids", &customers);
 });
 get_routes!(account_del, "/account/del", "account/del.html", {
     let accounts = sqlx::query("select account_id from account")
@@ -550,14 +548,16 @@ get_routes!(account_change, "/account/change", "account/change.html", {
         .map(|x: MySqlRow| -> String { x.get("account_id") })
         .fetch_all(&**pool)
         .await?;
-    let customers = sqlx::query("select customer_id from customer")
-        .map(|x: MySqlRow| -> String { x.get("customer_id") })
-        .fetch_all(&**pool)
-        .await?;
+    let customers = sqlx::query_as!(
+        CustomerId,
+        "select customer_real_id as real_id, customer_id as id from customer"
+    )
+    .fetch_all(&**pool)
+    .await?;
     ctx.insert("banks", &banks);
     ctx.insert("save_accounts", &save_accounts);
     ctx.insert("check_accounts", &check_accounts);
-    ctx.insert("customers", &customers);
+    ctx.insert("customerids", &customers);
 });
 get_routes!(account_query, "/account", "account/query.html");
 
@@ -566,12 +566,14 @@ get_routes!(loan_add, "/loan/add", "loan/add.html", {
         .map(|x: MySqlRow| -> String { x.get("bank_name") })
         .fetch_all(&**pool)
         .await?;
-    let customers = sqlx::query("select customer_id from customer")
-        .map(|x: MySqlRow| -> String { x.get("customer_id") })
-        .fetch_all(&**pool)
-        .await?;
+    let customers = sqlx::query_as!(
+        CustomerId,
+        "select customer_real_id as real_id, customer_id as id from customer"
+    )
+    .fetch_all(&**pool)
+    .await?;
     ctx.insert("banks", &banks);
-    ctx.insert("customers", &customers);
+    ctx.insert("customerids", &customers);
 });
 get_routes!(loan_del, "/loan/del", "loan/del.html", {
     let loans = sqlx::query("select loan_id from loan")

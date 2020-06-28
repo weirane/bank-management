@@ -47,8 +47,8 @@
         <label for="customers" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
           <select class="form-control choices-issue" name="customers" multiple required>
-            {% for c in customers %}
-            <option value="{{ c }}">{{ c }}</option>
+            {% for c in customerids %}
+            <option value="{{ c.real_id }}">{{ c.id }}</option>
             {% endfor %}
           </select>
         </div>
@@ -97,8 +97,8 @@
         <label for="customers" class="col-sm-4 col-form-label">客户</label>
         <div class="col-sm-8">
           <select class="form-control choices-issue" name="customers" multiple required>
-            {% for c in customers %}
-            <option value="{{ c }}">{{ c }}</option>
+            {% for c in customerids %}
+            <option value="{{ c.real_id }}">{{ c.id }}</option>
             {% endfor %}
           </select>
         </div>

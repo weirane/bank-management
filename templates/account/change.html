@@ -123,8 +123,8 @@
       <label for="credit" class="col-sm-3 col-form-label">客户</label>
       <div class="col-sm-9">
         <select class="form-control" name="customers" id="acc-customers" multiple>
-          {% for c in customers %}
-          <option value="{{ c }}">{{ c }}</option>
+          {% for c in customerids %}
+          <option value="{{ c.real_id }}">{{ c.id }}</option>
           {% endfor %}
         </select>
       </div>
