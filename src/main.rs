@@ -62,6 +62,8 @@ async fn main() -> std::io::Result<()> {
             .service(del_account)
             .service(change_account)
             .service(query_account)
+            .service(account_customers)
+            .service(change_account_customer)
             .service(add_loan)
             .service(del_loan)
             .service(issue_loan)

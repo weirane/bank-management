@@ -16,6 +16,7 @@ actix-files = "0.2"
 actix-session = "0.3"
 tera = "1.2"
 futures = "0.3"
+tokio = "0.2"
 
 log = "0.4"
 env_logger = "0.7"

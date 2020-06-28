@@ -4,7 +4,7 @@
 
 <h4>修改账户信息</h4>
 
-<div class="d-flex pt-3 justify-content-start">
+<div class="col-sm-12 d-flex pt-3 justify-content-start">
   <div class="pr-5">
     <h5 class="card-title">修改储蓄账户</h5>
     <form action="/account/change" method="POST">
@@ -102,4 +102,44 @@
   </div>
 </div>
 
+<div class="pt-3 col-sm-5">
+  <h5 class="card-title">修改关联客户</h5>
+  <form id="change-customer">
+    <input type="hidden" class="form-control" name="type" value="Check" />
+    <div class="form-group row">
+      <label for="id" class="col-sm-3 col-form-label">账户号</label>
+      <div class="col-sm-9">
+        <select class="form-control choices-issue" name="id" id="account-id">
+          {% for a in save_accounts %}
+          <option value="{{ a }}">{{ a }}</option>
+          {% endfor %}
+          {% for a in check_accounts %}
+          <option value="{{ a }}">{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="credit" class="col-sm-3 col-form-label">客户</label>
+      <div class="col-sm-9">
+        <select class="form-control" name="customers" id="acc-customers" multiple>
+          {% for c in customers %}
+          <option value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-sm-8">
+        <button onclick="changeCustomer()" type="button" class="btn btn-primary">提交</button>
+      </div>
+    </div>
+  </form>
+</div>
+
 {% endblock content %}
+
+{% block tail %}
+{{ super() }}
+<script src="/static/account-change.js"></script>
+{% endblock tail %}

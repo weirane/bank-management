@@ -11,7 +11,7 @@ use tera::Tera;
 
 use crate::action::{account, customer, loan};
 use crate::error::{Error, Result};
-use crate::types::Customer;
+use crate::types::{AccountCustomer, Customer};
 use crate::types::{LoanStat, SaveStat};
 use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
@@ -262,6 +262,48 @@ pub async fn query_account(
     Ok(HttpResponse::Ok().json(ret))
 }
 
+#[get("/account/customers")]
+pub async fn account_customers(pool: web::Data<MySqlPool>) -> Result<HttpResponse> {
+    use tokio::stream::StreamExt;
+    // Using sqlx::query! gives us Record { customer_id: Option<String>, ... }, so define the
+    // Record manually here.
+    #[derive(Debug, serde::Deserialize, sqlx::FromRow)]
+    struct Record {
+        account_id: String,
+        customer_id: String,
+    }
+    let mut cursor = sqlx::query_as!(
+        Record,
+        "select account_id, customer_id
+        from has_account left join customer using(customer_real_id)"
+    )
+    .fetch(&**pool);
+    let mut ret = HashMap::new();
+    while let Some(row) = cursor.next().await.transpose()? {
+        ret.entry(row.account_id)
+            .or_insert_with(Vec::new)
+            .push(row.customer_id);
+    }
+    Ok(HttpResponse::Ok().json(ret))
+}
+
+#[post("/account/customers")]
+pub async fn change_account_customer(
+    form: web::Json<AccountCustomer>,
+    pool: web::Data<MySqlPool>,
+) -> Result<HttpResponse> {
+    let id = &form.account;
+    sqlx::query!("delete from has_account where account_id = ?", id)
+        .execute(&**pool)
+        .await?;
+    let fs = form
+        .customers
+        .iter()
+        .map(|c| sqlx::query!("call add_has_account(?, ?)", id, c).execute(&**pool));
+    futures::future::join_all(fs).await;
+    Ok(HttpResponse::Ok().finish())
+}
+
 #[post("/loan/add")]
 pub async fn add_loan(
     sess: Session,
@@ -508,9 +550,14 @@ get_routes!(account_change, "/account/change", "account/change.html", {
         .map(|x: MySqlRow| -> String { x.get("account_id") })
         .fetch_all(&**pool)
         .await?;
+    let customers = sqlx::query("select customer_id from customer")
+        .map(|x: MySqlRow| -> String { x.get("customer_id") })
+        .fetch_all(&**pool)
+        .await?;
     ctx.insert("banks", &banks);
     ctx.insert("save_accounts", &save_accounts);
     ctx.insert("check_accounts", &check_accounts);
+    ctx.insert("customers", &customers);
 });
 get_routes!(account_query, "/account", "account/query.html");
 

@@ -135,6 +135,12 @@ impl NewAccount {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct AccountCustomer {
+    pub account: String,
+    pub customers: Vec<String>,
+}
+
 #[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct Loan {
     pub id: String,
