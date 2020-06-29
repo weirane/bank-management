@@ -44,6 +44,7 @@
     <label for="address" class="col-sm-2 col-form-label">联系人</label>
     <div class="col-sm-3">
       <select class="form-control choices-issue" name="contacter_id">
+        <option value="" selected>不修改</option>
         {% for c in contacters %}
         <option value="{{ c }}">{{ c }}</option>
         {% endfor %}
