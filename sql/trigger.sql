@@ -47,6 +47,7 @@ for each row begin
     declare n int;
     declare t int;
     declare b varchar(32);
+    declare c char(18);
     select type, bank into t, b from account where account_id = new.account_id;
     if t is null then
         signal sqlstate '45001' set message_text = '账户不存在';
@@ -54,10 +55,13 @@ for each row begin
     select count(account_id) into n from account right join has_account using(account_id)
     where customer_real_id = new.customer_real_id and account.bank = b and type = t;
     if n != 0 then
+        select customer_id into c from customer where customer_real_id = new.customer_real_id;
         if t = 0 then
-            signal sqlstate '45000' set message_text = '储蓄账户已存在';
+            set @msg = concat(c, ' 在 ', b, ' 的储蓄账户已存在');
+            signal sqlstate '45000' set message_text = @msg;
         elseif t = 1 then
-            signal sqlstate '45000' set message_text = '支票账户已存在';
+            set @msg = concat(c, ' 在 ', b, ' 的支票账户已存在');
+            signal sqlstate '45000' set message_text = @msg;
         end if;
     end if;
 end;

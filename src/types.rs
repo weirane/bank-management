@@ -1,4 +1,5 @@
-use crate::error::Result;
+use crate::action::account::has_account_msg;
+use crate::error::{Error, Result};
 use bigdecimal::BigDecimal;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
@@ -142,8 +143,12 @@ impl NewAccount {
             )
             .execute(pool)
         });
-        futures::future::try_join_all(fs).await?;
-        Ok(())
+        let msg = has_account_msg(futures::future::join_all(fs).await);
+        if !msg.is_empty() {
+            Err(Error::Msg(msg))
+        } else {
+            Ok(())
+        }
     }
 }
 

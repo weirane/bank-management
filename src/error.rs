@@ -24,6 +24,10 @@ pub enum Error {
     /// Malformed request
     #[error("bad request: {0}")]
     BadRequest(&'static str),
+
+    /// Error with a message
+    #[error("{0}")]
+    Msg(String),
 }
 
 impl ResponseError for Error {
@@ -42,6 +46,7 @@ impl ResponseError for Error {
         match self {
             Actix(e) => e.as_response_error().status_code(),
             BadRequest(_) => StatusCode::BAD_REQUEST,
+            Msg(_) => StatusCode::OK,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

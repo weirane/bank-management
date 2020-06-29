@@ -17,6 +17,7 @@ use crate::types::{NewAccount, NewCustomer, NewLoan, NewLoanPay};
 
 pub type SMap = HashMap<String, String>;
 
+#[macro_export]
 macro_rules! db_error_msg {
     ($err:expr, $($code:literal => $($test:ident $str:literal : $msg:expr)+)+) => {{
         let e = $err;
@@ -147,17 +148,19 @@ pub async fn add_account(
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
     if let Err(e) = form.add(&pool).await {
-        if let Error::Sqlx(sqlx::Error::Database(e)) = e {
-            log::warn!("{}", e);
-            let msg = db_error_msg!(e,
-                "23000" =>
-                    starts_with "Duplicate entry" : |_| "账户号已存在"
-                "45000" =>
-                    ends_with "已存在" : |m| m
-            );
-            sess.set("error_msg", msg).ok();
-        } else {
-            return Err(e);
+        match e {
+            Error::Sqlx(sqlx::Error::Database(e)) => {
+                log::warn!("{}", e);
+                let msg = db_error_msg!(e,
+                    "23000" =>
+                        starts_with "Duplicate entry" : |_| "账户号已存在"
+                );
+                sess.set("error_msg", msg).ok();
+            }
+            Error::Msg(msg) => {
+                sess.set("error_msg", msg).ok();
+            }
+            e => return Err(e),
         }
     }
     Ok(HttpResponse::Ok().finish())
@@ -284,6 +287,7 @@ pub async fn account_customers(pool: web::Data<MySqlPool>) -> Result<HttpRespons
 
 #[post("/account/customers")]
 pub async fn change_account_customer(
+    sess: Session,
     form: web::Json<AccountCustomer>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
@@ -299,7 +303,10 @@ pub async fn change_account_customer(
         )
         .execute(&**pool)
     });
-    futures::future::join_all(fs).await;
+    let msg = account::has_account_msg(futures::future::join_all(fs).await);
+    if !msg.is_empty() {
+        sess.set("error_msg", msg).ok();
+    }
     Ok(HttpResponse::Ok().finish())
 }
 

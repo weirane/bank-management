@@ -45,7 +45,9 @@
     <div class="container pl-1 pt-4" id="page-content-wrapper">
       {% if error_msg %}
         <div class="alert alert-danger" role="alert">
-          {{ error_msg }}
+          {% for line in error_msg | split(pat="\n") %}
+          {{ line }}<br>
+          {% endfor %}
         </div>
       {% endif %}
       {% block content %}

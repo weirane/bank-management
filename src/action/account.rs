@@ -155,3 +155,20 @@ pub async fn query_check(form: &crate::route::SMap, pool: &MySqlPool) -> Result<
         .map_err(Into::into)
     }
 }
+
+pub fn has_account_msg(rs: Vec<std::result::Result<u64, sqlx::Error>>) -> String {
+    use itertools::Itertools;
+    rs.iter()
+        .filter_map(|r| {
+            if let Err(sqlx::Error::Database(e)) = r {
+                let msg = crate::db_error_msg!(e,
+                    "45000" =>
+                        ends_with "已存在" : |m| m
+                );
+                Some(msg)
+            } else {
+                None
+            }
+        })
+        .join("\n")
+}
