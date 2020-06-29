@@ -9,8 +9,8 @@
     <label for="id" class="col-sm-2 col-form-label">身份证号</label>
     <div class="col-sm-3">
       <select class="form-control choices-issue" name="id">
-        {% for c in customers %}
-        <option value="{{ c }}">{{ c }}</option>
+        {% for c in customerids %}
+        <option value="{{ c.real_id }}">{{ c.id }}</option>
         {% endfor %}
       </select>
     </div>

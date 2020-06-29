@@ -52,14 +52,3 @@ pub async fn change(cus: i32, key: &str, val: &str, pool: &MySqlPool) -> Result<
         _ => Err(Error::BadRequest("invalid change field")),
     }
 }
-
-pub async fn get_real_id(cus_id: &str, pool: &MySqlPool) -> Result<i32> {
-    let real_id = sqlx::query!(
-        "select customer_real_id from customer where customer_id = ?",
-        cus_id
-    )
-    .fetch_one(pool)
-    .await?
-    .customer_real_id;
-    Ok(real_id)
-}

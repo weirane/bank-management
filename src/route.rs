@@ -91,8 +91,11 @@ pub async fn change_customer(
     mut form: web::Form<SMap>,
     pool: web::Data<MySqlPool>,
 ) -> Result<HttpResponse> {
-    let id = form.remove("id").ok_or(Error::BadRequest("no id"))?;
-    let real_id = customer::get_real_id(&id, &pool).await?;
+    let real_id = form
+        .remove("id")
+        .ok_or(Error::BadRequest("no id"))?
+        .parse()
+        .map_err(|_| Error::BadRequest("invalid id"))?;
     let fs = form.iter().filter_map(|(k, v)| {
         let v = v.trim();
         if v.is_empty() {
@@ -501,15 +504,17 @@ get_routes!(customer_del, "/customer/del", "customer/del.html", {
 });
 #[rustfmt::skip]
 get_routes!(customer_change, "/customer/change", "customer/change.html", {
-    let customers = sqlx::query("select customer_id from customer")
-        .map(|x: MySqlRow| -> String { x.get("customer_id") })
-        .fetch_all(&**pool)
-        .await?;
+    let customers = sqlx::query_as!(
+        CustomerId,
+        "select customer_real_id as real_id, customer_id as id from customer"
+    )
+    .fetch_all(&**pool)
+    .await?;
     let contacters = sqlx::query("select cast(contacter_id as char(10)) as id from contacter")
         .map(|x: MySqlRow| -> String { x.get("id") })
         .fetch_all(&**pool)
         .await?;
-    ctx.insert("customers", &customers);
+    ctx.insert("customerids", &customers);
     ctx.insert("contacters", &contacters);
 });
 get_routes!(customer_query, "/customer", "customer/query.html");
