@@ -32,7 +32,7 @@
       </select>
     </div>
   </div>
-  <button onclick="query('/loan/query', 'query-loan', ['id', 'bank', 'amount', 'state', 'paid'])"
+  <button onclick="query('/loan/query', 'query-loan', ['id', 'bank', 'state', 'amount', 'paid'])"
           type="button" class="btn btn-primary">提交</button>
 </form>
 
@@ -42,8 +42,8 @@
       <tr>
         <th scope="col">ID</th>
         <th scope="col">银行</th>
-        <th scope="col">数额</th>
         <th scope="col">状态</th>
+        <th scope="col">数额</th>
         <th scope="col">已支付数额</th>
       </tr>
     </thead>
