@@ -13,6 +13,11 @@ const findBankObj = (stats, bank) => {
     throw new Error(`cannot find bank ${bank}`);
 };
 
+/** find the maximum element of an array */
+const maxArr = (arr) => {
+    return Math.max.apply(null, arr);
+};
+
 const getData = async () => {
     const res = await fetch(`/stats/${TYPE}`, {
         method: 'post',
@@ -33,7 +38,7 @@ const constructOption = (json, datas, interval, title) => {
         dataZoom: {
             show: true,
             realtime: true,
-            start: json.datas.length > 20 ? 50 : 0,
+            start: maxArr(Object.values(datas).map((x) => x.length)) > 20 ? 50 : 0,
             end: 100,
         },
         xAxis: { name: '日期', type: 'category' },
